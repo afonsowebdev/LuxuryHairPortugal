@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+:root {
+  --color-plum: #4a1e3c;
+  --color-plum-light: #6e2a54;
+  --color-plum-dark: #35152b;
+  --color-gold: #e8a64c;
+  --color-gold-light: #f2c581;
+  --color-gold-dark: #c48632;
+  --color-bordeaux: #6e1b2a;
+  --color-cream: #faf6f0;
+}
+
+@theme inline {
+  --color-plum: var(--color-plum);
+  --color-plum-light: var(--color-plum-light);
+  --color-plum-dark: var(--color-plum-dark);
+  --color-gold: var(--color-gold);
+  --color-gold-light: var(--color-gold-light);
+  --color-gold-dark: var(--color-gold-dark);
+  --color-bordeaux: var(--color-bordeaux);
+  --color-cream: var(--color-cream);
+
+  --font-script: var(--font-script);
+  --font-serif: var(--font-serif);
+  --font-sans: var(--font-sans);
+
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.7s ease-out both;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-cream);
+  color: var(--color-plum-dark);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-plum-dark);
+}
+
+/* Focus visibility for keyboard navigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* Scrollbar accent */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-plum-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gold-dark);
+  border-radius: 999px;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+.tracking-widest-lg {
+  letter-spacing: 0.28em;
+}
+
+.input {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(74, 30, 60, 0.18);
+  background: transparent;
+  padding: 0.65rem 1rem;
+  color: var(--color-plum-dark);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.input:focus {
+  border-color: var(--color-gold);
+}
+
+.bg-noise {
+  background-image: radial-gradient(
+      ellipse at top left,
+      rgba(232, 166, 76, 0.08),
+      transparent 55%
+    ),
+    radial-gradient(ellipse at bottom right, rgba(110, 27, 42, 0.25), transparent 55%);
+}
