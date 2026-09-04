@@ -1,12 +1,16 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Product } from "@/types";
 import { PriceTag } from "@/components/ui/PriceTag";
 import { StarRating } from "@/components/ui/StarRating";
 import { Button } from "@/components/ui/Button";
+import { HeartIcon, EditIcon } from "@/components/ui/icons";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAdminAuth } from "@/context/AdminAuthContext";
 import { formatDate } from "@/lib/format";
 
 function OptionGroup({
@@ -46,7 +50,10 @@ function OptionGroup({
 
 export function ProductDetailClient({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const { isWishlisted, toggle } = useWishlist();
+  const { isAuthenticated: isAdmin } = useAdminAuth();
   const router = useRouter();
+  const wishlisted = isWishlisted(product.id);
 
   const [comprimento, setComprimento] = useState(product.variants.comprimentos?.[0] ?? "");
   const [cor, setCor] = useState(product.variants.cores?.[0] ?? "");
@@ -91,6 +98,20 @@ export function ProductDetailClient({ product }: { product: Product }) {
 
   return (
     <div className="flex flex-col gap-6">
+      {isAdmin && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-xs text-plum-dark">
+          <span className="font-semibold uppercase tracking-[0.14em] text-bordeaux">
+            Admin · ID {product.id} · Stock real: {product.stock}
+          </span>
+          <Link
+            href={`/admin/produtos/${product.id}`}
+            className="flex items-center gap-1.5 font-semibold uppercase tracking-[0.14em] text-plum-dark underline decoration-plum-dark/30 hover:decoration-plum-dark"
+          >
+            <EditIcon className="h-3.5 w-3.5" />
+            Editar produto
+          </Link>
+        </div>
+      )}
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-bordeaux">
           {product.category.replace("-", " ")}
@@ -170,6 +191,18 @@ export function ProductDetailClient({ product }: { product: Product }) {
         <Button variant="primary" size="lg" className="flex-1" onClick={handleBuyNow} disabled={isSoldOut}>
           Comprar Já
         </Button>
+        <button
+          onClick={() => toggle(product.id)}
+          aria-pressed={wishlisted}
+          aria-label={wishlisted ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center self-center rounded-full border transition-colors cursor-pointer sm:self-auto ${
+            wishlisted
+              ? "border-gold bg-gold text-plum-dark"
+              : "border-plum/20 text-plum-dark/70 hover:border-gold hover:text-bordeaux"
+          }`}
+        >
+          <HeartIcon className="h-5 w-5" filled={wishlisted} />
+        </button>
       </div>
 
       <div className="mt-4">

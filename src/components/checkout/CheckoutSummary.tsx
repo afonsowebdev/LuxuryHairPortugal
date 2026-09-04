@@ -1,20 +1,27 @@
+"use client";
+
 import type { CartLine } from "@/types";
 import { ProductImage } from "@/components/product/ProductImage";
 import { formatEUR } from "@/lib/format";
-import { getProductBySlug } from "@/lib/data/products";
+import { useAdminData } from "@/context/AdminDataContext";
 
 export function CheckoutSummary({
   lines,
   subtotal,
   shipping,
   shippingLabel,
+  discount = 0,
+  couponCode,
 }: {
   lines: CartLine[];
   subtotal: number;
   shipping: number;
   shippingLabel: string;
+  discount?: number;
+  couponCode?: string;
 }) {
-  const total = subtotal + shipping;
+  const { getProductBySlug } = useAdminData();
+  const total = subtotal + shipping - discount;
 
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-plum-dark/5 p-6">
@@ -25,7 +32,13 @@ export function CheckoutSummary({
           return (
             <div key={`${line.productId}-${line.variant}`} className="flex gap-3">
               <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg">
-                <ProductImage seed={line.slug} category={product?.category} className="h-full w-full object-cover" />
+                <ProductImage
+                  seed={line.slug}
+                  category={product?.category}
+                  src={product?.photos?.[0]}
+                  alt={line.name}
+                  className="h-full w-full object-cover"
+                />
                 <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-plum text-[10px] font-bold text-cream">
                   {line.quantity}
                 </span>
@@ -48,6 +61,12 @@ export function CheckoutSummary({
           <span>Envio ({shippingLabel})</span>
           <span>{shipping === 0 ? "Grátis" : formatEUR(shipping)}</span>
         </div>
+        {discount > 0 && (
+          <div className="flex justify-between text-bordeaux">
+            <span>Desconto {couponCode && `(${couponCode})`}</span>
+            <span>-{formatEUR(discount)}</span>
+          </div>
+        )}
       </div>
       <div className="flex justify-between border-t border-plum/10 pt-4 font-serif text-lg font-semibold text-plum-dark">
         <span>Total</span>

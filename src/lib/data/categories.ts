@@ -14,6 +14,7 @@ export const categories: Category[] = [
     description:
       "Cachos definidos e volumosos, cheios de movimento e personalidade.",
     image: "perucas-cacheadas",
+    photo: "/assets/produtos/perucas/peruca-preta-cacheada-frontal.jpg",
   },
   {
     slug: "box-braids",
@@ -21,6 +22,7 @@ export const categories: Category[] = [
     description:
       "Tranças sintéticas premium, leves e duradouras, prontas a usar.",
     image: "box-braids",
+    photo: "/assets/produtos/box-braids/box-braids-castanhas-frontal.jpg",
   },
   {
     slug: "pestanas",
@@ -28,6 +30,7 @@ export const categories: Category[] = [
     description:
       "Pestanas de efeito volume e fio a fio para um olhar sofisticado.",
     image: "pestanas",
+    photo: "/assets/modelos/retrato-pestanas-fundo-bordeaux-01.jpg",
   },
 ];
 

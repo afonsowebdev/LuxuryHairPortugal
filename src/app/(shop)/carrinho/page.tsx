@@ -8,17 +8,17 @@ import { Button } from "@/components/ui/Button";
 import { TrashIcon } from "@/components/ui/icons";
 import { CartIcon } from "@/components/ui/CartIcon";
 import { formatEUR } from "@/lib/format";
-import { getProductBySlug } from "@/lib/data/products";
-import { storeSettings } from "@/lib/data/settings";
+import { useAdminData } from "@/context/AdminDataContext";
 
 export default function CartPage() {
   const { lines, updateQuantity, removeItem, subtotal } = useCart();
+  const { getProductBySlug, settings: storeSettings } = useAdminData();
 
   const shipping = useMemo(() => {
     if (lines.length === 0) return 0;
     if (subtotal >= storeSettings.shipping.freeShippingThreshold) return 0;
     return storeSettings.shipping.portugalContinental.price;
-  }, [subtotal, lines.length]);
+  }, [subtotal, lines.length, storeSettings]);
 
   const total = subtotal + shipping;
 
@@ -58,6 +58,8 @@ export default function CartPage() {
                   <ProductImage
                     seed={line.slug}
                     category={product?.category}
+                    src={product?.photos?.[0]}
+                    alt={line.name}
                     className="h-full w-full object-cover"
                   />
                 </Link>

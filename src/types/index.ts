@@ -9,6 +9,8 @@ export interface Category {
   name: string;
   description: string;
   image: string;
+  /** Caminho para uma fotografia real em /public. Sem ela, usa-se o placeholder SVG gerado. */
+  photo?: string;
 }
 
 export type ProductBadge = "Novo" | "Esgotado" | "Mais Vendido" | null;
@@ -36,6 +38,12 @@ export interface Product {
   price: number;
   compareAtPrice?: number;
   images: string[];
+  /**
+   * Fotografias reais em /public, na mesma ordem que `images` (que guarda as
+   * legendas/alt text). Um índice em falta ou por preencher usa o
+   * placeholder SVG gerado a partir do slug.
+   */
+  photos?: string[];
   badge: ProductBadge;
   shortDescription: string;
   description: string;
@@ -92,9 +100,40 @@ export interface Order {
   items: OrderItem[];
   subtotal: number;
   shipping: number;
+  couponCode?: string;
+  discount?: number;
   total: number;
   status: OrderStatus;
   paymentMethod: "Multibanco" | "MB WAY" | "Cartão";
+  createdAt: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  type: "percentagem" | "fixo";
+  value: number;
+  active: boolean;
+  minOrderValue?: number;
+  expiresAt?: string;
+  usageLimit?: number;
+  usageCount: number;
+  createdAt: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
   createdAt: string;
 }
 

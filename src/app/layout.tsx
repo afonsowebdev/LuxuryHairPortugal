@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Alex_Brush } from "next/font/google";
+import { Poppins, Inter, Alex_Brush } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { WishlistProvider } from "@/context/WishlistContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
+import { AdminDataProvider } from "@/context/AdminDataContext";
 
-const serif = Playfair_Display({
+const heading = Poppins({
   variable: "--font-serif",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -54,10 +57,22 @@ export default function RootLayout({
   return (
     <html
       lang="pt-PT"
-      className={`${serif.variable} ${sans.variable} ${script.variable} h-full antialiased`}
+      className={`${heading.variable} ${sans.variable} ${script.variable} h-full antialiased`}
     >
+      <head>
+        <link
+          href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-cream text-plum-dark">
-        <CartProvider>{children}</CartProvider>
+        <AdminAuthProvider>
+          <AdminDataProvider>
+            <CartProvider>
+              <WishlistProvider>{children}</WishlistProvider>
+            </CartProvider>
+          </AdminDataProvider>
+        </AdminAuthProvider>
       </body>
     </html>
   );

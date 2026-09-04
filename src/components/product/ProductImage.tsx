@@ -1,4 +1,6 @@
+import Image from "next/image";
 import { seededRandom } from "@/lib/placeholder";
+import { getImageFocus } from "@/lib/imageFocus";
 import type { CategorySlug } from "@/types";
 
 interface ProductImageProps {
@@ -6,6 +8,9 @@ interface ProductImageProps {
   category?: CategorySlug;
   className?: string;
   index?: number;
+  /** Fotografia real em /public. Quando definida, substitui o SVG gerado. */
+  src?: string;
+  alt?: string;
 }
 
 const gradients: [string, string][] = [
@@ -48,7 +53,27 @@ function CategoryEmblem({ category }: { category?: CategorySlug }) {
   }
 }
 
-export function ProductImage({ seed, category, className = "", index = 0 }: ProductImageProps) {
+export function ProductImage({
+  seed,
+  category,
+  className = "",
+  index = 0,
+  src,
+  alt,
+}: ProductImageProps) {
+  if (src) {
+    return (
+      <Image
+        src={src}
+        alt={alt ?? seed}
+        fill
+        sizes="(min-width: 1024px) 33vw, 50vw"
+        className={className}
+        style={{ objectPosition: getImageFocus(src) }}
+      />
+    );
+  }
+
   const rand = seededRandom(`${seed}-${index}`);
   const [from, to] = gradients[Math.floor(rand() * gradients.length)];
   const angle = Math.floor(rand() * 360);

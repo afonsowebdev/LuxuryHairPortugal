@@ -1,33 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { storeSettings as defaultSettings } from "@/lib/data/settings";
+import { useState } from "react";
+import { useAdminData } from "@/context/AdminDataContext";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/admin/Toast";
 import { useToast } from "@/hooks/useToast";
-
-const STORAGE_KEY = "lhp_admin_settings";
+import type { StoreSettings } from "@/lib/data/settings";
 
 export default function AdminSettingsPage() {
+  const { settings, updateSettings } = useAdminData();
   const { message, showToast } = useToast();
-  const [settings, setSettings] = useState(defaultSettings);
+  const [draft, setDraft] = useState<StoreSettings>(settings);
+  const [dirty, setDirty] = useState(false);
 
-  useEffect(() => {
-    // localStorage is unavailable during SSR, so settings can only be
-    // hydrated client-side after mount.
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setSettings(JSON.parse(raw));
-      } catch {
-        // ignore corrupted storage
-      }
-    }
-  }, []);
+  // Re-sync the draft once the real (localStorage-hydrated) settings arrive,
+  // as long as the admin hasn't started editing yet.
+  if (!dirty && draft !== settings) {
+    setDraft(settings);
+  }
+
+  function set(updater: (s: StoreSettings) => StoreSettings) {
+    setDirty(true);
+    setDraft(updater);
+  }
 
   function handleSave() {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    updateSettings(draft);
+    setDirty(false);
     showToast("Definições guardadas com sucesso.");
   }
 
@@ -38,7 +37,7 @@ export default function AdminSettingsPage() {
           Definições da Loja
         </h1>
         <p className="text-sm text-plum-dark/50">
-          Estas definições alimentam o front-end da loja (protótipo local).
+          Estas definições alimentam a loja em tempo real (cabeçalho, rodapé, portes, pagamento).
         </p>
       </div>
 
@@ -47,27 +46,41 @@ export default function AdminSettingsPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Nome da Loja">
             <input
-              value={settings.brand.name}
-              onChange={(e) =>
-                setSettings((s) => ({ ...s, brand: { ...s.brand, name: e.target.value } }))
-              }
+              value={draft.brand.name}
+              onChange={(e) => set((s) => ({ ...s, brand: { ...s.brand, name: e.target.value } }))}
+              className="input"
+            />
+          </Field>
+          <Field label="Email">
+            <input
+              value={draft.brand.email}
+              onChange={(e) => set((s) => ({ ...s, brand: { ...s.brand, email: e.target.value } }))}
               className="input"
             />
           </Field>
           <Field label="Instagram">
             <input
-              value={settings.brand.instagram}
+              value={draft.brand.instagram}
               onChange={(e) =>
-                setSettings((s) => ({ ...s, brand: { ...s.brand, instagram: e.target.value } }))
+                set((s) => ({ ...s, brand: { ...s.brand, instagram: e.target.value } }))
+              }
+              className="input"
+            />
+          </Field>
+          <Field label="URL do Instagram">
+            <input
+              value={draft.brand.instagramUrl}
+              onChange={(e) =>
+                set((s) => ({ ...s, brand: { ...s.brand, instagramUrl: e.target.value } }))
               }
               className="input"
             />
           </Field>
           <Field label="Telefone Principal">
             <input
-              value={settings.brand.phones[0]}
+              value={draft.brand.phones[0]}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   brand: { ...s.brand, phones: [e.target.value, s.brand.phones[1]] },
                 }))
@@ -77,9 +90,9 @@ export default function AdminSettingsPage() {
           </Field>
           <Field label="Telefone Secundário">
             <input
-              value={settings.brand.phones[1]}
+              value={draft.brand.phones[1]}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   brand: { ...s.brand, phones: [s.brand.phones[0], e.target.value] },
                 }))
@@ -89,9 +102,9 @@ export default function AdminSettingsPage() {
           </Field>
           <Field label="Tagline" className="sm:col-span-2">
             <input
-              value={settings.brand.tagline}
+              value={draft.brand.tagline}
               onChange={(e) =>
-                setSettings((s) => ({ ...s, brand: { ...s.brand, tagline: e.target.value } }))
+                set((s) => ({ ...s, brand: { ...s.brand, tagline: e.target.value } }))
               }
               className="input"
             />
@@ -100,15 +113,16 @@ export default function AdminSettingsPage() {
       </div>
 
       <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
-        <h2 className="font-serif text-lg font-semibold text-plum-dark">Portes de Envio (€)</h2>
+        <h2 className="font-serif text-lg font-semibold text-plum-dark">Envio</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Field label="Portugal Continental">
+          <Field label="Portugal Continental (€)">
             <input
               type="number"
               min={0}
-              value={settings.shipping.portugalContinental.price}
+              step="0.01"
+              value={draft.shipping.portugalContinental.price}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   shipping: {
                     ...s.shipping,
@@ -122,13 +136,14 @@ export default function AdminSettingsPage() {
               className="input"
             />
           </Field>
-          <Field label="Açores & Madeira">
+          <Field label="Açores & Madeira (€)">
             <input
               type="number"
               min={0}
-              value={settings.shipping.portugalIlhas.price}
+              step="0.01"
+              value={draft.shipping.portugalIlhas.price}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   shipping: {
                     ...s.shipping,
@@ -139,13 +154,14 @@ export default function AdminSettingsPage() {
               className="input"
             />
           </Field>
-          <Field label="Moçambique">
+          <Field label="Moçambique (€)">
             <input
               type="number"
               min={0}
-              value={settings.shipping.mocambique.price}
+              step="0.01"
+              value={draft.shipping.mocambique.price}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   shipping: {
                     ...s.shipping,
@@ -156,16 +172,34 @@ export default function AdminSettingsPage() {
               className="input"
             />
           </Field>
-          <Field label="Envio Grátis a Partir de (€)" className="sm:col-span-3">
+          <Field label="Envio Grátis a Partir de (€)">
             <input
               type="number"
               min={0}
-              value={settings.shipping.freeShippingThreshold}
+              value={draft.shipping.freeShippingThreshold}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   shipping: { ...s.shipping, freeShippingThreshold: Number(e.target.value) },
                 }))
+              }
+              className="input"
+            />
+          </Field>
+          <Field label="Transportadora">
+            <input
+              value={draft.shipping.carrier}
+              onChange={(e) =>
+                set((s) => ({ ...s, shipping: { ...s.shipping, carrier: e.target.value } }))
+              }
+              className="input"
+            />
+          </Field>
+          <Field label="Telefone para Devoluções">
+            <input
+              value={draft.shipping.returnsPhone}
+              onChange={(e) =>
+                set((s) => ({ ...s, shipping: { ...s.shipping, returnsPhone: e.target.value } }))
               }
               className="input"
             />
@@ -178,9 +212,9 @@ export default function AdminSettingsPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Entidade Multibanco">
             <input
-              value={settings.payments.multibancoEntity}
+              value={draft.payments.multibancoEntity}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   payments: { ...s.payments, multibancoEntity: e.target.value },
                 }))
@@ -192,9 +226,9 @@ export default function AdminSettingsPage() {
             <input
               type="number"
               min={1}
-              value={settings.payments.referenceValidityHours}
+              value={draft.payments.referenceValidityHours}
               onChange={(e) =>
-                setSettings((s) => ({
+                set((s) => ({
                   ...s,
                   payments: { ...s.payments, referenceValidityHours: Number(e.target.value) },
                 }))
@@ -202,14 +236,30 @@ export default function AdminSettingsPage() {
               className="input"
             />
           </Field>
+          <Field label="Métodos de pagamento (separados por vírgula)" className="sm:col-span-2">
+            <input
+              value={draft.payments.methods.join(", ")}
+              onChange={(e) =>
+                set((s) => ({
+                  ...s,
+                  payments: {
+                    ...s.payments,
+                    methods: e.target.value
+                      .split(",")
+                      .map((m) => m.trim())
+                      .filter(Boolean),
+                  },
+                }))
+              }
+              className="input"
+            />
+          </Field>
         </div>
-        <p className="text-xs text-plum-dark/40">
-          Métodos de pagamento disponíveis: {settings.payments.methods.join(", ")}.
-        </p>
       </div>
 
-      <div className="flex justify-end">
-        <Button onClick={handleSave} variant="primary" size="md">
+      <div className="flex justify-end gap-3">
+        {dirty && <p className="self-center text-xs text-bordeaux">Alterações por guardar</p>}
+        <Button onClick={handleSave} variant="primary" size="md" disabled={!dirty}>
           Guardar Definições
         </Button>
       </div>

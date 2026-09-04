@@ -1,10 +1,13 @@
+"use client";
+
 import Link from "next/link";
-import { categories } from "@/lib/data/categories";
 import { ProductImage } from "@/components/product/ProductImage";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Container } from "@/components/ui/Container";
+import { useAdminData } from "@/context/AdminDataContext";
 
 export function CategoryGrid() {
+  const { categories } = useAdminData();
   return (
     <section className="bg-cream py-20 sm:py-28">
       <Container>
@@ -13,17 +16,19 @@ export function CategoryGrid() {
           title="Escolha a sua transformação"
           description="Quatro coleções pensadas para realçar a sua beleza, com a qualidade e o brilho que só o luxo verdadeiro proporciona."
         />
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category, i) => (
             <Link
               key={category.slug}
               href={`/loja/${category.slug}`}
-              className="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-2xl shadow-lg shadow-plum/10 animate-fade-in-up"
+              className="group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-lg shadow-lg shadow-plum/10 animate-fade-in-up"
               style={{ animationDelay: `${i * 100}ms` }}
             >
               <ProductImage
                 seed={category.slug}
                 category={category.slug}
+                src={category.photo}
+                alt={category.name}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-plum-dark/90 via-plum-dark/20 to-transparent" />

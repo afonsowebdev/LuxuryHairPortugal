@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/admin/Toast";
 import { useToast } from "@/hooks/useToast";
 import { OrderStatusBadge } from "@/components/ui/OrderStatusBadge";
+import { OrderTracker } from "@/components/ui/OrderTracker";
+import { Select } from "@/components/ui/Select";
 import { formatDateTime, formatEUR } from "@/lib/format";
 import type { OrderStatus } from "@/types";
 
@@ -45,6 +47,10 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
           <p className="text-sm text-plum-dark/50">{formatDateTime(order.createdAt)}</p>
         </div>
         <OrderStatusBadge status={order.status} />
+      </div>
+
+      <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+        <OrderTracker status={order.status} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -122,20 +128,20 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">
               Atualizar Estado
             </h2>
-            <select
+            <Select
               value={order.status}
               onChange={(e) => {
                 updateOrderStatus(order.id, e.target.value as OrderStatus);
                 showToast("Estado da encomenda atualizado.");
               }}
-              className="input w-full"
+              className="input"
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>
                   {s}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
       </div>

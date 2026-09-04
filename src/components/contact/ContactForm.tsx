@@ -2,12 +2,16 @@
 
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import { useAdminData } from "@/context/AdminDataContext";
 
 export function ContactForm() {
+  const { addContactMessage } = useAdminData();
   const [sent, setSent] = useState(false);
+  const [values, setValues] = useState({ name: "", email: "", subject: "", message: "" });
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    addContactMessage(values);
     setSent(true);
   }
 
@@ -27,20 +31,42 @@ export function ContactForm() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-xs font-medium text-plum-dark/70">Nome</span>
-          <input required className="input" />
+          <input
+            required
+            value={values.name}
+            onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
+            className="input"
+          />
         </label>
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-xs font-medium text-plum-dark/70">Email</span>
-          <input required type="email" className="input" />
+          <input
+            required
+            type="email"
+            value={values.email}
+            onChange={(e) => setValues((v) => ({ ...v, email: e.target.value }))}
+            className="input"
+          />
         </label>
       </div>
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-xs font-medium text-plum-dark/70">Assunto</span>
-        <input required className="input" />
+        <input
+          required
+          value={values.subject}
+          onChange={(e) => setValues((v) => ({ ...v, subject: e.target.value }))}
+          className="input"
+        />
       </label>
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-xs font-medium text-plum-dark/70">Mensagem</span>
-        <textarea required rows={5} className="input resize-none" />
+        <textarea
+          required
+          rows={5}
+          value={values.message}
+          onChange={(e) => setValues((v) => ({ ...v, message: e.target.value }))}
+          className="input resize-none"
+        />
       </label>
       <Button type="submit" variant="primary" size="lg" className="w-fit">
         Enviar Mensagem

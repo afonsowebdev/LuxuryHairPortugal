@@ -1,14 +1,17 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useAdminData } from "@/context/AdminDataContext";
 
 export function NewsletterForm() {
+  const { addNewsletterSubscriber } = useAdminData();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!email) return;
+    addNewsletterSubscriber(email);
     setSubmitted(true);
     setEmail("");
   }

@@ -6,6 +6,7 @@ import { getPendingOrder } from "@/lib/orderStore";
 import type { Order } from "@/types";
 import { MultibancoDetails } from "@/components/checkout/MultibancoDetails";
 import { OrderStatusBadge } from "@/components/ui/OrderStatusBadge";
+import { OrderTracker } from "@/components/ui/OrderTracker";
 import { Button } from "@/components/ui/Button";
 import { formatEUR, formatDateTime } from "@/lib/format";
 
@@ -58,6 +59,10 @@ export default function OrderReceivedPage({
           {formatDateTime(order.createdAt)}
         </p>
         <OrderStatusBadge status={order.status} />
+      </div>
+
+      <div className="mb-8 rounded-2xl bg-plum-dark/5 p-6">
+        <OrderTracker status={order.status} />
       </div>
 
       <MultibancoDetails entity={order.entity} reference={order.reference} amount={order.total} />

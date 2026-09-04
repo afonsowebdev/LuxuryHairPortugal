@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
 import { useAdminAuth, DEMO_CREDENTIALS } from "@/context/AdminAuthContext";
@@ -67,6 +68,13 @@ export default function AdminLoginPage() {
           Protótipo — credenciais de demonstração: <br />
           {DEMO_CREDENTIALS.email} / {DEMO_CREDENTIALS.password}
         </p>
+
+        <Link
+          href="/"
+          className="mt-6 block text-center text-xs text-cream/40 hover:text-gold"
+        >
+          ← Voltar à loja
+        </Link>
       </div>
     </div>
   );

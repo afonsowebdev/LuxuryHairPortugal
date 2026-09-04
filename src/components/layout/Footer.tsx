@@ -1,11 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
 import { InstagramIcon, PhoneIcon } from "@/components/ui/icons";
 import { NewsletterForm } from "./NewsletterForm";
-import { storeSettings } from "@/lib/data/settings";
-import { categories } from "@/lib/data/categories";
+import { useAdminData } from "@/context/AdminDataContext";
 
 export function Footer() {
+  const { settings: storeSettings, categories } = useAdminData();
   return (
     <footer className="border-t border-gold/10 bg-plum-dark text-cream">
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 py-14 sm:grid-cols-2 lg:grid-cols-5 lg:px-8">
@@ -86,6 +88,9 @@ export function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-5 text-xs text-cream/40 sm:flex-row lg:px-8">
           <p>© {new Date().getFullYear()} Luxury Hair Portugal. Todos os direitos reservados.</p>
           <p>Feito com amor para quem se permite ser incrível.</p>
+          <Link href="/admin/login" className="text-cream/30 hover:text-gold">
+            Acesso Admin
+          </Link>
         </div>
       </div>
     </footer>

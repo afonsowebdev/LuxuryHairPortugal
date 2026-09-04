@@ -2,8 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import type { Product, ProductBadge, CategorySlug } from "@/types";
-import { categories } from "@/lib/data/categories";
+import { useAdminData } from "@/context/AdminDataContext";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 
 const badgeOptions: { value: ProductBadge; label: string }[] = [
   { value: null, label: "Sem etiqueta" },
@@ -15,6 +16,13 @@ const badgeOptions: { value: ProductBadge; label: string }[] = [
 function toList(value: string): string[] {
   return value
     .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+function toLines(value: string): string[] {
+  return value
+    .split("\n")
     .map((v) => v.trim())
     .filter(Boolean);
 }
@@ -34,6 +42,7 @@ interface ProductFormValues {
   cores: string;
   densidades: string;
   texturas: string;
+  photos: string;
   featured: boolean;
   bestseller: boolean;
 }
@@ -54,6 +63,7 @@ function productToValues(p?: Product): ProductFormValues {
     cores: p?.variants.cores?.join(", ") ?? "",
     densidades: p?.variants.densidades?.join(", ") ?? "",
     texturas: p?.variants.texturas?.join(", ") ?? "",
+    photos: p?.photos?.join("\n") ?? "",
     featured: p?.featured ?? false,
     bestseller: p?.bestseller ?? false,
   };
@@ -75,6 +85,7 @@ export function ProductForm({
   initial?: Product;
   onSubmit: (product: Product) => void;
 }) {
+  const { categories } = useAdminData();
   const [values, setValues] = useState<ProductFormValues>(productToValues(initial));
 
   function update<K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) {
@@ -92,6 +103,7 @@ export function ProductForm({
       price,
       compareAtPrice: values.compareAtPrice ? Number(values.compareAtPrice) : undefined,
       images: initial?.images ?? [values.name],
+      photos: toLines(values.photos).length ? toLines(values.photos) : undefined,
       badge: values.badge,
       shortDescription: values.shortDescription,
       description: values.description,
@@ -121,7 +133,7 @@ export function ProductForm({
           <input required value={values.name} onChange={(e) => update("name", e.target.value)} className="input" />
         </FormField>
         <FormField label="Categoria" required>
-          <select
+          <Select
             value={values.category}
             onChange={(e) => update("category", e.target.value as CategorySlug)}
             className="input"
@@ -131,10 +143,10 @@ export function ProductForm({
                 {c.name}
               </option>
             ))}
-          </select>
+          </Select>
         </FormField>
         <FormField label="Etiqueta">
-          <select
+          <Select
             value={values.badge ?? ""}
             onChange={(e) => update("badge", (e.target.value || null) as ProductBadge)}
             className="input"
@@ -144,7 +156,7 @@ export function ProductForm({
                 {b.label}
               </option>
             ))}
-          </select>
+          </Select>
         </FormField>
         <FormField label="Preço (€)" required>
           <input
@@ -176,6 +188,10 @@ export function ProductForm({
             onChange={(e) => update("stock", e.target.value)}
             className="input"
           />
+          <span className="text-[11px] text-plum-dark/40">
+            Com stock 0, o produto aparece automaticamente como &quot;Esgotado&quot; na loja,
+            independentemente da etiqueta escolhida.
+          </span>
         </FormField>
         <div className="flex items-center gap-6 pt-6">
           <label className="flex items-center gap-2 text-sm text-plum-dark/80">
@@ -236,6 +252,36 @@ export function ProductForm({
             />
           </FormField>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+        <h3 className="font-serif text-lg font-semibold text-plum-dark">Imagens</h3>
+        <p className="text-xs text-plum-dark/50">
+          Uma URL por linha (ex.: <code>/assets/produtos/perucas/nome-da-foto.jpg</code>). Sem
+          imagens, o produto usa um placeholder gerado automaticamente na paleta da marca.
+        </p>
+        <FormField label="URLs das imagens">
+          <textarea
+            rows={3}
+            value={values.photos}
+            onChange={(e) => update("photos", e.target.value)}
+            placeholder="/assets/produtos/perucas/peruca-loira-ondulada-frontal.jpg"
+            className="input resize-none font-mono text-xs"
+          />
+        </FormField>
+        {toLines(values.photos).length > 0 && (
+          <div className="flex flex-wrap gap-3">
+            {toLines(values.photos).map((url) => (
+              <div
+                key={url}
+                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-plum-dark/5 ring-1 ring-plum/10"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="h-full w-full object-cover" />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">

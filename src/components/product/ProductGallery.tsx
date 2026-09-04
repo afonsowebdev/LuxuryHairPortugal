@@ -10,11 +10,13 @@ export function ProductGallery({
   slug,
   category,
   images,
+  photos,
   badge,
 }: {
   slug: string;
   category: CategorySlug;
   images: string[];
+  photos?: string[];
   badge: ProductBadge;
 }) {
   const [active, setActive] = useState(0);
@@ -26,6 +28,8 @@ export function ProductGallery({
           seed={slug}
           category={category}
           index={active}
+          src={photos?.[active]}
+          alt={images[active]}
           className="h-full w-full object-cover"
         />
         <div className="absolute left-4 top-4">
@@ -43,7 +47,14 @@ export function ProductGallery({
                 active === i ? "ring-gold" : "ring-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <ProductImage seed={slug} category={category} index={i} className="h-full w-full object-cover" />
+              <ProductImage
+                seed={slug}
+                category={category}
+                index={i}
+                src={photos?.[i]}
+                alt={label}
+                className="h-full w-full object-cover"
+              />
             </button>
           ))}
         </div>

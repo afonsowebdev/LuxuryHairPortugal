@@ -5,9 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { CartIcon } from "@/components/ui/CartIcon";
-import { MenuIcon, CloseIcon, PhoneIcon, InstagramIcon } from "@/components/ui/icons";
+import { MenuIcon, CloseIcon, PhoneIcon, InstagramIcon, HeartIcon } from "@/components/ui/icons";
 import { useCart } from "@/context/CartContext";
-import { storeSettings } from "@/lib/data/settings";
+import { useWishlist } from "@/context/WishlistContext";
+import { useAdminData } from "@/context/AdminDataContext";
 
 const navLinks = [
   { href: "/", label: "Início" },
@@ -22,6 +23,8 @@ const navLinks = [
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { itemCount } = useCart();
+  const { count: wishlistCount } = useWishlist();
+  const { settings: storeSettings } = useAdminData();
   const pathname = usePathname();
 
   return (
@@ -75,18 +78,32 @@ export function Header() {
             ))}
           </nav>
 
-          <Link
-            href="/carrinho"
-            className="relative flex items-center gap-2 p-2 text-cream hover:text-gold"
-            aria-label={`Carrinho de compras, ${itemCount} ${itemCount === 1 ? "item" : "itens"}`}
-          >
-            <CartIcon className="h-6 w-6" />
-            {itemCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-plum-dark">
-                {itemCount}
-              </span>
-            )}
-          </Link>
+          <div className="flex items-center">
+            <Link
+              href="/favoritos"
+              className="relative flex items-center gap-2 p-2 text-cream hover:text-gold"
+              aria-label={`Favoritos, ${wishlistCount} ${wishlistCount === 1 ? "produto" : "produtos"}`}
+            >
+              <HeartIcon className="h-6 w-6" filled={wishlistCount > 0} />
+              {wishlistCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-plum-dark">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/carrinho"
+              className="relative flex items-center gap-2 p-2 text-cream hover:text-gold"
+              aria-label={`Carrinho de compras, ${itemCount} ${itemCount === 1 ? "item" : "itens"}`}
+            >
+              <CartIcon className="h-6 w-6" />
+              {itemCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-plum-dark">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </div>
       </div>
 

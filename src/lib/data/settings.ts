@@ -1,4 +1,4 @@
-export const storeSettings = {
+export const defaultStoreSettings = {
   brand: {
     name: "Luxury Hair Portugal",
     instagram: "@luxury_hairpt",
@@ -8,14 +8,18 @@ export const storeSettings = {
     tagline: "Saúde, amor e cabelos arrumados todos os dias.",
   },
   shipping: {
-    portugalContinental: { label: "Portugal Continental", price: 5, etaDays: "1-2" },
-    portugalIlhas: { label: "Açores & Madeira", price: 9, etaDays: "3-5" },
+    portugalContinental: { label: "Portugal Continental", price: 7.99, etaDays: "1" },
+    portugalIlhas: { label: "Açores & Madeira", price: 7.99, etaDays: "3" },
     mocambique: { label: "Moçambique", price: 15, etaDays: "5-10" },
-    freeShippingThreshold: 200,
+    freeShippingThreshold: 250,
+    carrier: "CTT / CTT Expresso",
+    returnsPhone: "934762839",
   },
   payments: {
     multibancoEntity: "11249",
-    methods: ["Multibanco", "MB WAY", "Cartão de Crédito"],
+    methods: ["Multibanco", "MB WAY", "Transferência Bancária", "Cartão de Crédito"],
     referenceValidityHours: 48,
   },
 };
+
+export type StoreSettings = typeof defaultStoreSettings;

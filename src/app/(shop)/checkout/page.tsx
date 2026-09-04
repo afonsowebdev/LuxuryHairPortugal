@@ -4,20 +4,15 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
+import { useAdminData } from "@/context/AdminDataContext";
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary";
 import { Button } from "@/components/ui/Button";
 import { CheckIcon } from "@/components/ui/icons";
+import { Select } from "@/components/ui/Select";
 import { formatEUR } from "@/lib/format";
-import { storeSettings } from "@/lib/data/settings";
 import { generateMultibancoPayment, generateOrderId } from "@/lib/multibanco";
 import { savePendingOrder } from "@/lib/orderStore";
-import type { Order } from "@/types";
-
-const countryOptions = [
-  { value: "Portugal Continental", price: storeSettings.shipping.portugalContinental.price },
-  { value: "Açores & Madeira", price: storeSettings.shipping.portugalIlhas.price },
-  { value: "Moçambique", price: storeSettings.shipping.mocambique.price },
-];
+import type { Coupon, Order } from "@/types";
 
 interface CustomerForm {
   name: string;
@@ -37,24 +32,95 @@ const emptyForm: CustomerForm = {
   address: "",
   city: "",
   postalCode: "",
-  country: countryOptions[0].value,
+  country: "Portugal Continental",
   notes: "",
 };
 
+function validateCoupon(coupon: Coupon, subtotal: number): string | null {
+  if (!coupon.active) return "Este cupão já não está ativo.";
+  if (coupon.expiresAt && new Date(coupon.expiresAt).getTime() < Date.now())
+    return "Este cupão expirou.";
+  if (typeof coupon.usageLimit === "number" && coupon.usageCount >= coupon.usageLimit)
+    return "Este cupão atingiu o limite de utilizações.";
+  if (coupon.minOrderValue && subtotal < coupon.minOrderValue)
+    return `Válido a partir de ${formatEUR(coupon.minOrderValue)} em compras.`;
+  return null;
+}
+
 export default function CheckoutPage() {
   const { lines, subtotal, clearCart } = useCart();
+  const { placeOrder, settings: storeSettings, getCouponByCode } = useAdminData();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<CustomerForm>(emptyForm);
   const [payment, setPayment] = useState<"Multibanco" | "MB WAY" | "Cartão">("Multibanco");
   const [submitting, setSubmitting] = useState(false);
 
+  const [couponInput, setCouponInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const countryOptions = useMemo(
+    () => [
+      {
+        value: "Portugal Continental",
+        price: storeSettings.shipping.portugalContinental.price,
+        etaDays: storeSettings.shipping.portugalContinental.etaDays,
+      },
+      {
+        value: "Açores & Madeira",
+        price: storeSettings.shipping.portugalIlhas.price,
+        etaDays: storeSettings.shipping.portugalIlhas.etaDays,
+      },
+      {
+        value: "Moçambique",
+        price: storeSettings.shipping.mocambique.price,
+        etaDays: storeSettings.shipping.mocambique.etaDays,
+      },
+    ],
+    [storeSettings]
+  );
+
   const shipping = useMemo(() => {
     if (subtotal >= storeSettings.shipping.freeShippingThreshold) return 0;
     return countryOptions.find((c) => c.value === form.country)?.price ?? 0;
-  }, [form.country, subtotal]);
+  }, [form.country, subtotal, storeSettings, countryOptions]);
 
+  const discount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    const raw =
+      appliedCoupon.type === "percentagem"
+        ? (subtotal * appliedCoupon.value) / 100
+        : appliedCoupon.value;
+    return Math.min(raw, subtotal);
+  }, [appliedCoupon, subtotal]);
+
+  const total = subtotal + shipping - discount;
   const shippingLabel = form.country;
+
+  function handleApplyCoupon() {
+    setCouponError(null);
+    if (!couponInput.trim()) return;
+    const coupon = getCouponByCode(couponInput);
+    if (!coupon) {
+      setCouponError("Cupão inválido.");
+      setAppliedCoupon(null);
+      return;
+    }
+    const error = validateCoupon(coupon, subtotal);
+    if (error) {
+      setCouponError(error);
+      setAppliedCoupon(null);
+      return;
+    }
+    setAppliedCoupon(coupon);
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  }
 
   function updateField<K extends keyof CustomerForm>(key: K, value: CustomerForm[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -69,8 +135,7 @@ export default function CheckoutPage() {
   function handlePlaceOrder() {
     setSubmitting(true);
     const orderId = generateOrderId();
-    const total = subtotal + shipping;
-    const mb = generateMultibancoPayment(orderId, total);
+    const mb = generateMultibancoPayment(orderId, total, storeSettings);
 
     const order: Order = {
       id: orderId,
@@ -95,6 +160,8 @@ export default function CheckoutPage() {
       })),
       subtotal,
       shipping,
+      couponCode: appliedCoupon?.code,
+      discount: discount > 0 ? discount : undefined,
       total,
       status: "A aguardar pagamento",
       paymentMethod: "Multibanco",
@@ -102,6 +169,7 @@ export default function CheckoutPage() {
     };
 
     savePendingOrder(order);
+    placeOrder(order);
     clearCart();
     router.push(`/encomenda-recebida/${orderId}`);
   }
@@ -187,17 +255,17 @@ export default function CheckoutPage() {
                   />
                 </Field>
                 <Field label="País / Destino" required>
-                  <select
+                  <Select
                     value={form.country}
                     onChange={(e) => updateField("country", e.target.value)}
                     className="input"
                   >
                     {countryOptions.map((c) => (
                       <option key={c.value} value={c.value}>
-                        {c.value}
+                        {c.value} · {c.etaDays === "1" ? "24h" : `${c.etaDays} dias úteis`}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </Field>
               </div>
 
@@ -238,6 +306,45 @@ export default function CheckoutPage() {
                   />
                 </Field>
               </div>
+
+              <h2 className="mt-2 font-serif text-xl font-semibold text-plum-dark">
+                Código de Desconto
+              </h2>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between rounded-xl border border-gold/40 bg-gold/10 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-semibold text-plum-dark">{appliedCoupon.code}</p>
+                    <p className="text-xs text-plum-dark/60">
+                      {appliedCoupon.type === "percentagem"
+                        ? `${appliedCoupon.value}% de desconto`
+                        : `${formatEUR(appliedCoupon.value)} de desconto`}{" "}
+                      aplicado
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-xs font-semibold uppercase tracking-wide text-bordeaux hover:underline cursor-pointer"
+                  >
+                    Remover
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+                  <div className="flex-1">
+                    <input
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      placeholder="Ex: BEMVINDA10"
+                      className="input w-full uppercase"
+                    />
+                    {couponError && <p className="mt-1.5 text-xs text-bordeaux">{couponError}</p>}
+                  </div>
+                  <Button type="button" variant="secondary" size="md" onClick={handleApplyCoupon}>
+                    Aplicar
+                  </Button>
+                </div>
+              )}
 
               <Button type="submit" variant="primary" size="lg" className="mt-2 sm:w-fit sm:self-end">
                 Continuar para Pagamento
@@ -302,7 +409,7 @@ export default function CheckoutPage() {
                   onClick={handlePlaceOrder}
                   disabled={submitting}
                 >
-                  {submitting ? "A processar..." : `Confirmar Encomenda · ${formatEUR(subtotal + shipping)}`}
+                  {submitting ? "A processar..." : `Confirmar Encomenda · ${formatEUR(total)}`}
                 </Button>
               </div>
               <p className="text-center text-xs text-plum-dark/40">
@@ -323,6 +430,8 @@ export default function CheckoutPage() {
               subtotal={subtotal}
               shipping={shipping}
               shippingLabel={shippingLabel}
+              discount={discount}
+              couponCode={appliedCoupon?.code}
             />
           </div>
         </aside>

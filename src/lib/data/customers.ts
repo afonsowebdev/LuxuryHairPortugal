@@ -1,54 +1,8 @@
 import type { Customer } from "@/types";
 
-export const customers: Customer[] = [
-  {
-    id: "c1",
-    name: "Ana Patrícia Silva",
-    email: "ana.silva@example.com",
-    phone: "+351 912 345 678",
-    location: "Lisboa, Portugal",
-    ordersCount: 4,
-    totalSpent: 1024,
-    since: "2025-09-12",
-  },
-  {
-    id: "c2",
-    name: "Ndeutala Cossa",
-    email: "ndeutala.cossa@example.com",
-    phone: "+258 857 625 874",
-    location: "Maputo, Moçambique",
-    ordersCount: 2,
-    totalSpent: 381,
-    since: "2026-02-03",
-  },
-  {
-    id: "c3",
-    name: "Sofia Marques",
-    email: "sofia.marques@example.com",
-    phone: "+351 933 221 004",
-    location: "Porto, Portugal",
-    ordersCount: 3,
-    totalSpent: 812,
-    since: "2025-11-27",
-  },
-  {
-    id: "c4",
-    name: "Beatriz Lourenço",
-    email: "beatriz.lourenco@example.com",
-    phone: "+351 961 774 220",
-    location: "Braga, Portugal",
-    ordersCount: 1,
-    totalSpent: 134,
-    since: "2026-07-30",
-  },
-  {
-    id: "c5",
-    name: "Carla Fernandes",
-    email: "carla.fernandes@example.com",
-    phone: "+351 925 664 331",
-    location: "Coimbra, Portugal",
-    ordersCount: 1,
-    totalSpent: 62,
-    since: "2026-08-01",
-  },
-];
+/**
+ * Sem clientes de exemplo — os clientes são criados/atualizados
+ * automaticamente a partir de encomendas reais (ver AdminDataContext.placeOrder)
+ * e vivem em localStorage.
+ */
+export const customers: Customer[] = [];

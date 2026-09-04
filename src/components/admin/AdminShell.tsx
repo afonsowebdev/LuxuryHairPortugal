@@ -14,21 +14,30 @@ import {
   LogoutIcon,
   MenuIcon,
   CloseIcon,
+  CategoryIcon,
+  TagIcon,
+  MailIcon,
 } from "@/components/ui/icons";
+import { useAdminData } from "@/context/AdminDataContext";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Dashboard", icon: DashboardIcon },
   { href: "/admin/produtos", label: "Produtos", icon: BoxIcon },
+  { href: "/admin/categorias", label: "Categorias", icon: CategoryIcon },
   { href: "/admin/encomendas", label: "Encomendas", icon: ClipboardIcon },
+  { href: "/admin/cupoes", label: "Cupões", icon: TagIcon },
   { href: "/admin/clientes", label: "Clientes", icon: UsersIcon },
+  { href: "/admin/mensagens", label: "Mensagens", icon: MailIcon },
   { href: "/admin/definicoes", label: "Definições", icon: SettingsIcon },
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading, logout } = useAdminAuth();
+  const { messages } = useAdminData();
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const unreadCount = messages.filter((m) => !m.read).length;
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -47,7 +56,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen">
       <aside className="hidden w-64 shrink-0 flex-col border-r border-plum/10 bg-plum-dark px-5 py-6 lg:flex">
-        <Logo variant="gold" href="" className="mb-10 self-start scale-75 origin-left" />
+        <Logo variant="gold" href="" className="mb-10 self-center scale-75 origin-center" />
         <nav className="flex flex-1 flex-col gap-1">
           {navItems.map((item) => {
             const active = pathname.startsWith(item.href);
@@ -61,6 +70,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
               >
                 <item.icon className="h-[18px] w-[18px]" />
                 {item.label}
+                {item.href === "/admin/mensagens" && unreadCount > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-plum-dark">
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -104,6 +118,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   >
                     <item.icon className="h-[18px] w-[18px]" />
                     {item.label}
+                    {item.href === "/admin/mensagens" && unreadCount > 0 && (
+                      <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-plum-dark">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Link>
                 );
               })}

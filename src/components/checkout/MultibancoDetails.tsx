@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { formatEUR } from "@/lib/format";
 import { CopyIcon, CheckIcon } from "@/components/ui/icons";
-import { storeSettings } from "@/lib/data/settings";
+import { useAdminData } from "@/context/AdminDataContext";
 
 function CopyField({ label, value }: { label: string; value: string }) {
   const [copied, setCopied] = useState(false);
@@ -47,6 +47,7 @@ export function MultibancoDetails({
   reference: string;
   amount: number;
 }) {
+  const { settings: storeSettings } = useAdminData();
   return (
     <div className="flex flex-col gap-3 rounded-2xl border-2 border-gold/40 bg-gold/10 p-6">
       <h3 className="font-serif text-lg font-semibold text-plum-dark">Dados para Pagamento</h3>

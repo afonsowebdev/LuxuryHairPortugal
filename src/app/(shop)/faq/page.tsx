@@ -17,12 +17,17 @@ const faqs = [
   {
     question: "Quanto tempo demora o envio?",
     answer:
-      "Para Portugal Continental, o envio demora 1-2 dias úteis. Açores e Madeira demoram 3-5 dias úteis. Para Moçambique, o prazo é de 5-10 dias úteis.",
+      "As encomendas são enviadas em dias úteis através de CTT / CTT Expresso. Para Portugal Continental a entrega é feita em 24 horas e para Açores e Madeira em 72 horas. Para Moçambique, o prazo é de 5-10 dias úteis. Envio grátis para encomendas superiores a 250€ em Portugal; abaixo desse valor o custo de envio é de 7,99€.",
   },
   {
     question: "Como funciona o pagamento por Multibanco?",
     answer:
-      "Após finalizar a sua encomenda, receberá uma Entidade e uma Referência únicas. Pode efetuar o pagamento em qualquer caixa Multibanco, homebanking ou MB WAY. A referência é válida por 48 horas.",
+      "Após finalizar a sua encomenda, receberá uma Entidade e uma Referência únicas. Pode efetuar o pagamento em qualquer caixa Multibanco, homebanking, MB WAY ou por transferência bancária. A referência é válida por 48 horas.",
+  },
+  {
+    question: "A minha encomenda foi devolvida, o que faço?",
+    answer:
+      "Entre em contacto com a nossa linha de apoio ao cliente (934 762 839) para verificarmos o motivo da devolução e resolvermos a situação o mais rápido possível.",
   },
   {
     question: "Posso trocar a cor ou o comprimento depois de encomendar?",

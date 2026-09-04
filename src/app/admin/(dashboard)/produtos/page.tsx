@@ -8,12 +8,14 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Toast } from "@/components/admin/Toast";
 import { useToast } from "@/hooks/useToast";
-import { PlusIcon, EditIcon, TrashIcon, SearchIcon } from "@/components/ui/icons";
+import { PlusIcon, EditIcon, TrashIcon, SearchIcon, DownloadIcon } from "@/components/ui/icons";
 import { formatEUR } from "@/lib/format";
-import { categories } from "@/lib/data/categories";
+import { getEffectiveBadge } from "@/lib/data/products";
+import { Select } from "@/components/ui/Select";
+import { downloadCsv } from "@/lib/csv";
 
 export default function AdminProductsPage() {
-  const { products, deleteProduct } = useAdminData();
+  const { products, categories, deleteProduct } = useAdminData();
   const { message, showToast } = useToast();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
@@ -33,6 +35,20 @@ export default function AdminProductsPage() {
     }
   }
 
+  function handleExport() {
+    downloadCsv(
+      "produtos.csv",
+      filtered.map((p) => ({
+        id: p.id,
+        nome: p.name,
+        categoria: p.category,
+        preco: p.price,
+        stock: p.stock,
+        etiqueta: getEffectiveBadge(p) ?? "",
+      }))
+    );
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -40,10 +56,20 @@ export default function AdminProductsPage() {
           <h1 className="font-serif text-2xl font-semibold text-plum-dark sm:text-3xl">Produtos</h1>
           <p className="text-sm text-plum-dark/50">{products.length} produtos no catálogo</p>
         </div>
-        <Button href="/admin/produtos/novo" variant="primary" size="md">
-          <PlusIcon className="h-4 w-4" />
-          Novo Produto
-        </Button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleExport}
+            disabled={filtered.length === 0}
+            className="flex items-center gap-2 rounded-xl border border-plum/15 bg-white px-4 py-2.5 text-sm text-plum-dark hover:bg-plum-dark/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          >
+            <DownloadIcon className="h-4 w-4" />
+            Exportar
+          </button>
+          <Button href="/admin/produtos/novo" variant="primary" size="md">
+            <PlusIcon className="h-4 w-4" />
+            Novo Produto
+          </Button>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -56,10 +82,10 @@ export default function AdminProductsPage() {
             className="w-full rounded-xl border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
           />
         </div>
-        <select
+        <Select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-xl border border-plum/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-gold"
+          className="rounded-xl border border-plum/15 bg-white pl-4 py-2.5 text-sm outline-none focus:border-gold"
         >
           <option value="">Todas as categorias</option>
           {categories.map((c) => (
@@ -67,7 +93,7 @@ export default function AdminProductsPage() {
               {c.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-plum/10">
@@ -87,7 +113,13 @@ export default function AdminProductsPage() {
               <tr key={p.id} className="hover:bg-plum-dark/[0.02]">
                 <td className="flex items-center gap-3 px-5 py-3">
                   <div className="relative h-12 w-11 shrink-0 overflow-hidden rounded-lg">
-                    <ProductImage seed={p.slug} category={p.category} className="h-full w-full object-cover" />
+                    <ProductImage
+                      seed={p.slug}
+                      category={p.category}
+                      src={p.photos?.[0]}
+                      alt={p.name}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <span className="font-medium text-plum-dark">{p.name}</span>
                 </td>
@@ -99,7 +131,7 @@ export default function AdminProductsPage() {
                   </span>
                 </td>
                 <td className="px-5 py-3">
-                  <Badge badge={p.badge} />
+                  <Badge badge={getEffectiveBadge(p)} />
                 </td>
                 <td className="px-5 py-3">
                   <div className="flex justify-end gap-2">

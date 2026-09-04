@@ -1,4 +1,4 @@
-import { storeSettings } from "@/lib/data/settings";
+import type { StoreSettings } from "@/lib/data/settings";
 
 /**
  * PROTOTYPE ONLY — simulated Multibanco reference generator.
@@ -27,17 +27,16 @@ function hashToDigits(input: string, digits: number): string {
 
 export function generateMultibancoPayment(
   orderId: string,
-  amount: number
+  amount: number,
+  settings: Pick<StoreSettings, "payments">
 ): MultibancoPayment {
   const raw = hashToDigits(orderId, 9);
   const reference = `${raw.slice(0, 3)} ${raw.slice(3, 6)} ${raw.slice(6, 9)}`;
   const expires = new Date();
-  expires.setHours(
-    expires.getHours() + storeSettings.payments.referenceValidityHours
-  );
+  expires.setHours(expires.getHours() + settings.payments.referenceValidityHours);
 
   return {
-    entity: storeSettings.payments.multibancoEntity,
+    entity: settings.payments.multibancoEntity,
     reference,
     amount,
     expiresAt: expires.toISOString(),
