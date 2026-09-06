@@ -46,7 +46,7 @@ export function Hero() {
   }
 
   return (
-    <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden bg-plum-dark">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-plum-dark">
       {([0, 1] as const).map((layer) => (
         <video
           key={layer}
@@ -69,7 +69,7 @@ export function Hero() {
         }}
       />
 
-      <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center">
+      <div className="relative z-10 flex flex-col items-center gap-5 px-6 text-center">
         <span className="animate-fade-in text-xs font-semibold uppercase tracking-[0.4em] text-gold-light/90">
           Cabelo 100% Humano · Portugal &amp; Moçambique
         </span>
@@ -78,7 +78,7 @@ export function Hero() {
           Perucas, Box Braids &amp; Pestanas de Luxo
         </h1>
 
-        <p className="animate-fade-in-up max-w-lg text-balance font-serif text-xl italic text-cream/90 sm:text-2xl">
+        <p className="animate-fade-in-up max-w-md text-balance font-serif text-base italic text-cream/90 sm:text-lg">
           &ldquo;Você é tão incrível quanto se permite ser.&rdquo;
         </p>
 
@@ -96,8 +96,8 @@ export function Hero() {
           </Button>
         </div>
 
-        <div className="animate-fade-in mt-2 opacity-80">
-          <Logo variant="gold" className="scale-90" />
+        <div className="animate-fade-in mt-1 opacity-80">
+          <Logo variant="gold" className="scale-75" />
         </div>
       </div>
 

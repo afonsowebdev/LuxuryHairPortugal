@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { CategorySlug } from "@/types";
 import { ShopFilters, type FilterState, type FilterCounts } from "./ShopFilters";
 import { ProductCard } from "@/components/product/ProductCard";
-import { MenuIcon, CloseIcon, SearchIcon } from "@/components/ui/icons";
+import { FilterIcon, CloseIcon, SearchIcon, PackageSearchIcon } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { formatEUR } from "@/lib/format";
@@ -218,24 +218,26 @@ export function ShopClient({
       <PageHeader eyebrow={storeSettings.brand.name} title={displayTitle} description={displayDescription} />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 lg:flex-row">
-          <aside className="hidden w-64 shrink-0 lg:block lg:sticky lg:top-24 lg:h-fit lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:self-start">
-            <ShopFilters
-              state={filters}
-              onChange={setFilters}
-              lockedCategory={lockedCategory}
-              categories={categories}
-              colors={colors}
-              lengths={lengths}
-              textures={textures}
-              priceCeiling={priceCeiling}
-              counts={counts}
-              activeCount={activeChips.length}
-              onReset={resetFilters}
-            />
+          <aside className="hidden w-72 shrink-0 lg:block lg:sticky lg:top-24 lg:h-fit lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:self-start">
+            <div className="rounded-2xl border border-plum/10 bg-white p-6 shadow-sm">
+              <ShopFilters
+                state={filters}
+                onChange={setFilters}
+                lockedCategory={lockedCategory}
+                categories={categories}
+                colors={colors}
+                lengths={lengths}
+                textures={textures}
+                priceCeiling={priceCeiling}
+                counts={counts}
+                activeCount={activeChips.length}
+                onReset={resetFilters}
+              />
+            </div>
           </aside>
 
           <div className="flex-1">
-            <div className="mb-6 flex flex-col gap-4">
+            <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-plum/10 bg-white p-5 shadow-sm sm:p-6">
               <div className="relative">
                 <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-plum-dark/40" />
                 <input
@@ -244,12 +246,12 @@ export function ShopClient({
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Pesquisar produtos..."
                   aria-label="Pesquisar produtos"
-                  className="w-full rounded-full border border-plum/20 bg-white py-2.5 pl-11 pr-4 text-sm text-plum-dark outline-none focus:border-gold"
+                  className="w-full rounded-full border border-plum/15 bg-cream/60 py-2.5 pl-11 pr-4 text-sm text-plum-dark outline-none focus:border-gold focus:bg-white"
                 />
               </div>
 
               {(activeChips.length > 0 || query) && (
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 border-t border-plum/10 pt-4">
                   {query && <FilterChip label={`"${query}"`} onRemove={() => setQuery("")} />}
                   {activeChips.map((c) => (
                     <FilterChip key={c.key} label={c.label} onRemove={c.onRemove} />
@@ -263,12 +265,12 @@ export function ShopClient({
                 </div>
               )}
 
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3 border-t border-plum/10 pt-4">
                 <button
                   onClick={() => setMobileFiltersOpen(true)}
                   className="relative flex items-center gap-2 rounded-full border border-plum/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-plum-dark lg:hidden cursor-pointer"
                 >
-                  <MenuIcon className="h-4 w-4" />
+                  <FilterIcon className="h-4 w-4" />
                   Filtros
                   {activeChips.length > 0 && (
                     <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-plum-dark">
@@ -276,8 +278,9 @@ export function ShopClient({
                     </span>
                   )}
                 </button>
-                <p className="text-xs text-plum-dark/50">
-                  {filtered.length} {filtered.length === 1 ? "produto" : "produtos"}
+                <p className="text-xs font-medium text-plum-dark/50">
+                  <span className="font-semibold text-plum-dark">{filtered.length}</span>{" "}
+                  {filtered.length === 1 ? "produto" : "produtos"}
                 </p>
                 <Select
                   value={sort}
@@ -302,25 +305,35 @@ export function ShopClient({
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl bg-plum-dark/5 py-20 text-center">
-                <p className="font-serif text-xl text-plum-dark">Ainda sem produtos</p>
-                <p className="text-sm text-plum-dark/60">
-                  {lockedCategory
-                    ? "Esta coleção ainda não tem produtos disponíveis. Volte em breve."
-                    : "A loja ainda não tem produtos disponíveis. Volte em breve."}
-                </p>
+              <div className="flex flex-col items-center gap-4 rounded-2xl border border-plum/10 bg-white px-6 py-20 text-center shadow-sm">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-gold">
+                  <PackageSearchIcon className="h-7 w-7" />
+                </span>
+                <div className="space-y-1.5">
+                  <p className="font-serif text-xl font-semibold text-plum-dark">Ainda sem produtos</p>
+                  <p className="max-w-sm text-sm text-plum-dark/60">
+                    {lockedCategory
+                      ? "Esta coleção ainda não tem produtos disponíveis. Volte em breve."
+                      : "A loja ainda não tem produtos disponíveis. Volte em breve."}
+                  </p>
+                </div>
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl bg-plum-dark/5 py-20 text-center">
-                <p className="font-serif text-xl text-plum-dark">Sem resultados</p>
-                <p className="text-sm text-plum-dark/60">
-                  {query
-                    ? `Não encontrámos produtos para "${query}".`
-                    : "Experimente ajustar os filtros para encontrar o produto ideal."}
-                </p>
+              <div className="flex flex-col items-center gap-4 rounded-2xl border border-plum/10 bg-white px-6 py-20 text-center shadow-sm">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-gold">
+                  <SearchIcon className="h-7 w-7" />
+                </span>
+                <div className="space-y-1.5">
+                  <p className="font-serif text-xl font-semibold text-plum-dark">Sem resultados</p>
+                  <p className="max-w-sm text-sm text-plum-dark/60">
+                    {query
+                      ? `Não encontrámos produtos para "${query}".`
+                      : "Experimente ajustar os filtros para encontrar o produto ideal."}
+                  </p>
+                </div>
                 <button
                   onClick={resetFilters}
-                  className="text-xs font-semibold uppercase tracking-wide text-bordeaux hover:underline cursor-pointer"
+                  className="rounded-full border border-bordeaux/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-bordeaux hover:bg-bordeaux/5 cursor-pointer"
                 >
                   Limpar filtros e pesquisa
                 </button>

@@ -17,13 +17,12 @@ export default function ContactPage() {
         title="Contactos"
         description="Tem alguma questão sobre os nossos produtos, encomendas ou envios? Fale connosco."
       />
-      <Container className="grid grid-cols-1 gap-12 py-16 lg:grid-cols-2">
-        <div className="flex flex-col gap-6">
-          <h2 className="font-serif text-2xl font-semibold text-plum-dark">Fale Connosco</h2>
+      <Container className="grid grid-cols-1 items-start gap-8 py-16 lg:grid-cols-5 lg:gap-10">
+        <div className="lg:col-span-2">
           <ContactInfo />
         </div>
-        <div>
-          <h2 className="mb-6 font-serif text-2xl font-semibold text-plum-dark">
+        <div className="lg:col-span-3">
+          <h2 className="mb-5 font-serif text-2xl font-semibold text-plum-dark">
             Envie-nos uma Mensagem
           </h2>
           <ContactForm />

@@ -150,6 +150,38 @@ export function TrendingUpIcon({ className }: IconProps) {
   return <BxIcon name="bx-trending-up" className={className} />;
 }
 
+export function FilterIcon({ className }: IconProps) {
+  return <BxIcon name="bx-slider-alt" className={className} />;
+}
+
+export function PackageSearchIcon({ className }: IconProps) {
+  return <BxIcon name="bx-package" className={className} />;
+}
+
+export function LockIcon({ className }: IconProps) {
+  return <BxIcon name="bxs-lock-alt" className={className} />;
+}
+
+export function ShieldIcon({ className }: IconProps) {
+  return <BxIcon name="bxs-shield-alt-2" className={className} />;
+}
+
+export function ClockIcon({ className }: IconProps) {
+  return <BxIcon name="bx-time-five" className={className} />;
+}
+
+export function MapPinIcon({ className }: IconProps) {
+  return <BxIcon name="bx-map" className={className} />;
+}
+
+export function SendIcon({ className }: IconProps) {
+  return <BxIcon name="bx-paper-plane" className={className} />;
+}
+
+export function CheckShieldIcon({ className }: IconProps) {
+  return <BxIcon name="bxs-check-shield" className={className} />;
+}
+
 export function StarIcon({ className, filled = false }: IconProps & { filled?: boolean }) {
   return <BxIcon name={filled ? "bxs-star" : "bx-star"} className={className} />;
 }

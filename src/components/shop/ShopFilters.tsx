@@ -3,6 +3,7 @@
 import type { Category, CategorySlug } from "@/types";
 import { formatEUR } from "@/lib/format";
 import { getSwatchStyle, isLightSwatch } from "@/lib/colorSwatches";
+import { FilterIcon } from "@/components/ui/icons";
 
 export interface FilterState {
   categorySlugs: CategorySlug[];
@@ -35,11 +36,12 @@ interface ShopFiltersProps {
 
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-b border-plum/10 py-5 first:pt-0 last:border-0">
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-bordeaux">
+    <div className="border-b border-plum/10 py-5 first:pt-0 last:border-0 last:pb-0">
+      <h3 className="mb-3.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-bordeaux">
+        <span className="h-1 w-1 rounded-full bg-gold" aria-hidden="true" />
         {title}
       </h3>
-      <div className="flex flex-col gap-2.5">{children}</div>
+      <div className="flex flex-col gap-1">{children}</div>
     </div>
   );
 }
@@ -58,7 +60,7 @@ function CheckboxRow({
   swatchColor?: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 text-sm text-plum-dark/80">
+    <label className="-mx-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-plum-dark/80 transition-colors hover:bg-plum-dark/5">
       <input
         type="checkbox"
         checked={checked}
@@ -74,7 +76,7 @@ function CheckboxRow({
           style={getSwatchStyle(swatchColor)}
         />
       )}
-      <span className="flex-1">{label}</span>
+      <span className={`flex-1 ${checked ? "font-medium text-plum-dark" : ""}`}>{label}</span>
       {typeof count === "number" && (
         <span className="text-xs text-plum-dark/35">{count}</span>
       )}
@@ -108,8 +110,9 @@ export function ShopFilters({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between pb-4">
+      <div className="flex items-center justify-between pb-5">
         <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-plum-dark">
+          <FilterIcon className="h-5 w-5 text-gold" />
           Filtros
           {activeCount > 0 && (
             <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-plum-dark">
@@ -185,7 +188,10 @@ export function ShopFilters({
       )}
 
       <FilterGroup title="Preço">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3 rounded-xl bg-plum-dark/[0.03] p-3.5">
+          <span className="self-center rounded-full bg-plum-dark px-3 py-1 text-xs font-semibold text-cream">
+            Até {formatEUR(state.maxPrice)}
+          </span>
           <input
             type="range"
             min={0}
@@ -196,9 +202,8 @@ export function ShopFilters({
             className="accent-gold"
             aria-label="Preço máximo"
           />
-          <div className="flex items-center justify-between text-xs text-plum-dark/70">
+          <div className="flex items-center justify-between text-[11px] text-plum-dark/50">
             <span>€0</span>
-            <span className="font-semibold text-plum-dark">Até {formatEUR(state.maxPrice)}</span>
             <span>{formatEUR(priceCeiling)}</span>
           </div>
         </div>

@@ -25,7 +25,7 @@ export function NewsletterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full max-w-sm gap-2">
+    <form onSubmit={handleSubmit} className="flex w-full max-w-md flex-wrap gap-2">
       <label htmlFor="newsletter-email" className="sr-only">
         O seu email
       </label>
@@ -36,7 +36,7 @@ export function NewsletterForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="O seu email"
-        className="min-w-0 flex-1 rounded-full border border-cream/20 bg-transparent px-4 py-2.5 text-sm text-cream placeholder:text-cream/40 outline-none focus:border-gold"
+        className="min-w-[9rem] flex-1 rounded-full border border-cream/20 bg-transparent px-4 py-2.5 text-sm text-cream placeholder:text-cream/40 outline-none focus:border-gold"
       />
       <button
         type="submit"
