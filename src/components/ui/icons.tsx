@@ -62,6 +62,14 @@ export function ChevronDownIcon({ className }: IconProps) {
   return <BxIcon name="bx-chevron-down" className={className} />;
 }
 
+export function ChevronLeftIcon({ className }: IconProps) {
+  return <BxIcon name="bx-chevron-left" className={className} />;
+}
+
+export function ChevronRightIcon({ className }: IconProps) {
+  return <BxIcon name="bx-chevron-right" className={className} />;
+}
+
 export function TrashIcon({ className }: IconProps) {
   return <BxIcon name="bx-trash" className={className} />;
 }
@@ -180,6 +188,34 @@ export function SendIcon({ className }: IconProps) {
 
 export function CheckShieldIcon({ className }: IconProps) {
   return <BxIcon name="bxs-check-shield" className={className} />;
+}
+
+export function CertifiedIcon({ className }: IconProps) {
+  return <BxIcon name="bxs-certification" className={className} />;
+}
+
+export function TruckIcon({ className }: IconProps) {
+  return <BxIcon name="bxs-truck" className={className} />;
+}
+
+export function CreditCardIcon({ className }: IconProps) {
+  return <BxIcon name="bx-credit-card" className={className} />;
+}
+
+export function SupportIcon({ className }: IconProps) {
+  return <BxIcon name="bx-support" className={className} />;
+}
+
+export function MinusIcon({ className }: IconProps) {
+  return <BxIcon name="bx-minus" className={className} />;
+}
+
+export function BagIcon({ className }: IconProps) {
+  return <BxIcon name="bx-shopping-bag" className={className} />;
+}
+
+export function ArrowRightIcon({ className }: IconProps) {
+  return <BxIcon name="bx-right-arrow-alt" className={className} />;
 }
 
 export function StarIcon({ className, filled = false }: IconProps & { filled?: boolean }) {

@@ -45,7 +45,7 @@ export function MobileMenuOverlay({
             key={link.href}
             href={link.href}
             onClick={onClose}
-            className={`font-serif text-2xl font-medium transition-colors hover:text-gold sm:text-3xl ${
+            className={`font-serif text-2xl font-normal transition-colors hover:text-gold sm:text-3xl ${
               visible ? "animate-fade-in-up" : "opacity-0"
             } ${pathname === link.href ? "text-gold" : "text-cream"}`}
             style={{ animationDelay: visible ? `${120 + i * 55}ms` : undefined }}

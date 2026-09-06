@@ -18,7 +18,7 @@ export function FeaturedProducts() {
         <SectionHeading
           eyebrow="Seleção Exclusiva"
           title="Mais Vendidos"
-          description="As peças preferidas da nossa comunidade — qualidade premium, sempre à espera de si."
+          description="As peças preferidas da nossa comunidade, com qualidade premium, sempre à espera de si."
           light
         />
         <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">

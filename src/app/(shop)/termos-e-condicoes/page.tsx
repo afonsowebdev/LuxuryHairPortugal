@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const sections = [
   {
     title: "1. Objeto",
-    body: "Os presentes Termos & Condições regulam a utilização do website Luxury Hair Portugal e a compra dos produtos nele disponibilizados — perucas, box braids e pestanas. Ao efetuar uma encomenda, o cliente aceita integralmente estes termos.",
+    body: "Os presentes Termos & Condições regulam a utilização do website Luxury Hair Portugal e a compra dos produtos nele disponibilizados: perucas, box braids e pestanas. Ao efetuar uma encomenda, o cliente aceita integralmente estes termos.",
   },
   {
     title: "2. Produtos e Preços",
@@ -30,7 +30,7 @@ const sections = [
   },
   {
     title: "6. Propriedade Intelectual",
-    body: "Todo o conteúdo do website — textos, imagens, logótipo e design — é propriedade da Luxury Hair Portugal e não pode ser reproduzido sem autorização prévia.",
+    body: "Todo o conteúdo do website (textos, imagens, logótipo e design) é propriedade da Luxury Hair Portugal e não pode ser reproduzido sem autorização prévia.",
   },
   {
     title: "7. Contactos",

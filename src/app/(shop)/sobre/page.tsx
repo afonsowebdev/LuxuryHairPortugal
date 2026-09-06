@@ -58,7 +58,7 @@ export default function AboutPage() {
           <p>
             A Luxury Hair Portugal é uma loja online especializada na venda de perucas, box
             braids e pestanas 100% naturais e certificadas. Vaidade e sensualidade são irmãs
-            gémeas na vida de uma mulher — por isso trazemos uma variedade de cabelos que deixam
+            gémeas na vida de uma mulher, por isso trazemos uma variedade de cabelos que deixam
             qualquer mulher mais atraente, linda e poderosa.
           </p>
           <p>

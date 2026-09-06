@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
@@ -32,8 +32,27 @@ export function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
+  const headerRef = useRef<HTMLElement>(null);
+
   const isHome = pathname === "/";
   const transparent = isHome && !scrolled;
+  const shrink = isHome && scrolled;
+
+  // Publishes the header's real rendered height as a CSS variable so other
+  // fixed/sticky elements (e.g. the cart/checkout order-summary sidebar) can
+  // offset themselves below it exactly, instead of a hardcoded `top-*` guess
+  // that drifts out of sync whenever the header's content or padding changes.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    function update() {
+      if (el) document.documentElement.style.setProperty("--header-height", `${el.offsetHeight}px`);
+    }
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isHome, scrolled]);
 
   useEffect(() => {
     if (!isHome) return;
@@ -44,6 +63,29 @@ export function Header() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [isHome]);
+
+  // Nudges the header's cart/wishlist icons with the same shake used on
+  // hover whenever an item is added, so the feedback is visible even if the
+  // user's mouse isn't anywhere near it. The key bump forces a remount so
+  // rapid, back-to-back adds each replay the animation instead of being
+  // swallowed.
+  const [cartBumpKey, setCartBumpKey] = useState(0);
+  const prevItemCount = useRef(itemCount);
+  useEffect(() => {
+    if (itemCount > prevItemCount.current) {
+      setCartBumpKey((k) => k + 1);
+    }
+    prevItemCount.current = itemCount;
+  }, [itemCount]);
+
+  const [wishlistBumpKey, setWishlistBumpKey] = useState(0);
+  const prevWishlistCount = useRef(wishlistCount);
+  useEffect(() => {
+    if (wishlistCount > prevWishlistCount.current) {
+      setWishlistBumpKey((k) => k + 1);
+    }
+    prevWishlistCount.current = wishlistCount;
+  }, [wishlistCount]);
 
   function openMenu() {
     setMenuOpen(true);
@@ -56,7 +98,7 @@ export function Header() {
   }
 
   return (
-    <header className={`z-50 ${isHome ? "fixed inset-x-0 top-0" : "sticky top-0"}`}>
+    <header ref={headerRef} className={`z-50 ${isHome ? "fixed inset-x-0 top-0" : "sticky top-0"}`}>
       <div
         className={`hidden text-cream/80 sm:block transition-colors duration-300 ${
           transparent ? "bg-transparent" : "bg-plum-dark"
@@ -86,10 +128,16 @@ export function Header() {
         className={`border-b transition-colors duration-300 ${
           transparent
             ? "border-transparent bg-transparent"
-            : "border-gold/10 bg-plum/95 backdrop-blur-sm supports-[backdrop-filter]:bg-plum/90"
+            : isHome
+              ? "border-gold/10 bg-plum/70 backdrop-blur-lg supports-[backdrop-filter]:bg-plum/55"
+              : "border-gold/10 bg-plum/95 backdrop-blur-sm supports-[backdrop-filter]:bg-plum/90"
         }`}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2.5 sm:px-6 lg:px-8">
+        <div
+          className={`mx-auto flex max-w-7xl items-center justify-between px-4 transition-[padding] duration-300 sm:px-6 lg:px-8 ${
+            shrink ? "py-1.5" : "py-2.5"
+          }`}
+        >
           <button
             className="flex h-10 w-10 items-center justify-center text-cream lg:hidden"
             onClick={() => (menuOpen ? closeMenu() : openMenu())}
@@ -100,7 +148,12 @@ export function Header() {
           </button>
 
           <div className="flex-1 lg:flex-none flex justify-center lg:justify-start">
-            <Logo variant="gold" className="scale-75 sm:scale-90" />
+            <Logo
+              variant="gold"
+              className={`origin-center scale-75 transition-transform duration-300 ${
+                shrink ? "sm:scale-75" : "sm:scale-90"
+              }`}
+            />
           </div>
 
           <nav className="hidden flex-1 justify-center gap-7 lg:flex" aria-label="Navegação principal">
@@ -120,15 +173,18 @@ export function Header() {
           <div className="flex items-center">
             <Link
               href="/favoritos"
-              className="group relative flex items-center gap-2 p-2 text-cream hover:text-gold"
+              className="group relative flex items-center gap-2 p-2 text-cream hover:text-gold active:text-gold"
               aria-label={`Favoritos, ${wishlistCount} ${wishlistCount === 1 ? "produto" : "produtos"}`}
             >
               <span
                 aria-hidden="true"
-                className="absolute inset-0 scale-75 rounded-full border border-transparent bg-transparent opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:border-gold/30 group-hover:bg-gold/10 group-hover:opacity-100"
+                className="absolute inset-0 scale-75 rounded-full border border-transparent bg-transparent opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:border-gold/30 group-hover:bg-gold/10 group-hover:opacity-100 group-active:scale-100 group-active:border-gold/30 group-active:bg-gold/10 group-active:opacity-100"
               />
               <HeartIcon
-                className="relative h-6 w-6 group-hover:animate-icon-shake"
+                key={wishlistBumpKey}
+                className={`relative h-6 w-6 group-hover:animate-icon-shake group-active:animate-icon-shake ${
+                  wishlistBumpKey > 0 ? "animate-icon-shake" : ""
+                }`}
                 filled={wishlistCount > 0}
               />
               {wishlistCount > 0 && (
@@ -139,14 +195,19 @@ export function Header() {
             </Link>
             <Link
               href="/carrinho"
-              className="group relative flex items-center gap-2 p-2 text-cream hover:text-gold"
+              className="group relative flex items-center gap-2 p-2 text-cream hover:text-gold active:text-gold"
               aria-label={`Carrinho de compras, ${itemCount} ${itemCount === 1 ? "item" : "itens"}`}
             >
               <span
                 aria-hidden="true"
-                className="absolute inset-0 scale-75 rounded-full border border-transparent bg-transparent opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:border-gold/30 group-hover:bg-gold/10 group-hover:opacity-100"
+                className="absolute inset-0 scale-75 rounded-full border border-transparent bg-transparent opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:border-gold/30 group-hover:bg-gold/10 group-hover:opacity-100 group-active:scale-100 group-active:border-gold/30 group-active:bg-gold/10 group-active:opacity-100"
               />
-              <CartIcon className="relative h-6 w-6 group-hover:animate-icon-shake" />
+              <CartIcon
+                key={cartBumpKey}
+                className={`relative h-6 w-6 group-hover:animate-icon-shake group-active:animate-icon-shake ${
+                  cartBumpKey > 0 ? "animate-icon-shake" : ""
+                }`}
+              />
               {itemCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-plum-dark">
                   {itemCount}

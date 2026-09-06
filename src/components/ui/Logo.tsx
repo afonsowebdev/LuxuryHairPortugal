@@ -52,7 +52,7 @@ export function Logo({ variant = "gold", className = "", href = "/" }: LogoProps
   if (!href) return content;
 
   return (
-    <Link href={href} aria-label="Luxury Hair Portugal — página inicial" className="inline-block">
+    <Link href={href} aria-label="Ir para a página inicial da Luxury Hair Portugal" className="inline-block">
       {content}
     </Link>
   );

@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     template: "%s | Luxury Hair Portugal",
   },
   description:
-    "Luxury Hair Portugal — perucas de cabelo 100% humano, box braids e pestanas premium. Saúde, amor e cabelos arrumados todos os dias. Envio para Portugal e Moçambique.",
+    "Luxury Hair Portugal: perucas de cabelo 100% humano, box braids e pestanas premium. Saúde, amor e cabelos arrumados todos os dias. Envio para Portugal e Moçambique.",
   keywords: [
     "perucas cabelo humano",
     "box braids",

@@ -10,7 +10,7 @@ export default function ShopPage() {
   return (
     <ShopClient
       title="A Nossa Loja"
-      description="Perucas, box braids e pestanas de luxo — filtre por categoria, cor, comprimento e preço para encontrar a peça perfeita."
+      description="Perucas, box braids e pestanas de luxo. Filtre por categoria, cor, comprimento e preço para encontrar a peça perfeita."
     />
   );
 }

@@ -218,7 +218,7 @@ export function ShopClient({
       <PageHeader eyebrow={storeSettings.brand.name} title={displayTitle} description={displayDescription} />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 lg:flex-row">
-          <aside className="hidden w-72 shrink-0 lg:block lg:sticky lg:top-24 lg:h-fit lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:self-start">
+          <aside className="hidden w-72 shrink-0 lg:block lg:sticky lg:top-[calc(var(--header-height,6rem)+1rem)] lg:h-fit lg:max-h-[calc(100vh-var(--header-height,6rem)-2rem)] lg:overflow-y-auto lg:self-start">
             <div className="rounded-2xl border border-plum/10 bg-white p-6 shadow-sm">
               <ShopFilters
                 state={filters}

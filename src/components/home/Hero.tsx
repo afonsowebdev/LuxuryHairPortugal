@@ -69,7 +69,7 @@ export function Hero() {
         }}
       />
 
-      <div className="relative z-10 flex flex-col items-center gap-5 px-6 text-center">
+      <div className="relative z-10 mt-12 flex flex-col items-center gap-5 px-6 text-center sm:mt-20">
         <span className="animate-fade-in text-xs font-semibold uppercase tracking-[0.4em] text-gold-light/90">
           Cabelo 100% Humano · Portugal &amp; Moçambique
         </span>
@@ -83,7 +83,7 @@ export function Hero() {
         </p>
 
         <p className="animate-fade-in-up max-w-md text-sm text-cream/60">
-          {storeSettings.brand.tagline} Perucas, box braids e pestanas de luxo — feitas para
+          {storeSettings.brand.tagline} Perucas, box braids e pestanas de luxo, feitas para
           realçar a sua beleza natural.
         </p>
 

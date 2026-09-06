@@ -36,7 +36,7 @@ import { defaultStoreSettings, type StoreSettings } from "@/lib/data/settings";
  * isto por chamadas a uma API ligada a uma base de dados.
  */
 const KEYS = {
-  products: "lhp_admin_products_v2",
+  products: "lhp_admin_products_v3",
   orders: "lhp_admin_orders_v2",
   customers: "lhp_admin_customers_v2",
   categories: "lhp_admin_categories_v1",

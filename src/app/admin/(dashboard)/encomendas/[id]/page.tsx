@@ -90,7 +90,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
 
           <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
             <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">
-              Dados de Pagamento — Multibanco
+              Dados de Pagamento Multibanco
             </h2>
             <div className="grid grid-cols-3 gap-4 text-sm">
               <div>

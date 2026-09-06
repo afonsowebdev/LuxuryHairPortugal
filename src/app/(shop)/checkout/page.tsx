@@ -424,7 +424,7 @@ export default function CheckoutPage() {
         </div>
 
         <aside className="w-full lg:w-96">
-          <div className="sticky top-24">
+          <div className="sticky top-[calc(var(--header-height,6rem)+1rem)]">
             <CheckoutSummary
               lines={lines}
               subtotal={subtotal}

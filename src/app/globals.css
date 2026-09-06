@@ -67,10 +67,6 @@
   }
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 body {
   background: var(--color-cream);
   color: var(--color-plum-dark);
@@ -134,4 +130,12 @@ textarea:focus-visible,
       transparent 55%
     ),
     radial-gradient(ellipse at bottom right, rgba(110, 27, 42, 0.25), transparent 55%);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

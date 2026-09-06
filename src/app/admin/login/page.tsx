@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
         </form>
 
         <p className="mt-6 rounded-xl bg-cream/5 p-3 text-center text-[11px] text-cream/40">
-          Protótipo — credenciais de demonstração: <br />
+          Protótipo, credenciais de demonstração: <br />
           {DEMO_CREDENTIALS.email} / {DEMO_CREDENTIALS.password}
         </p>
 
