@@ -128,7 +128,7 @@ export function ProductForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 rounded bg-white p-6 ring-1 ring-plum/10 sm:grid-cols-2">
         <FormField label="Nome do Produto" required className="sm:col-span-2">
           <input required value={values.name} onChange={(e) => update("name", e.target.value)} className="input" />
         </FormField>
@@ -215,7 +215,7 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="flex flex-col gap-4 rounded bg-white p-6 ring-1 ring-plum/10">
         <h3 className="font-serif text-lg font-semibold text-plum-dark">Variantes</h3>
         <p className="text-xs text-plum-dark/50">Separe as opções por vírgula.</p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -254,7 +254,7 @@ export function ProductForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="flex flex-col gap-4 rounded bg-white p-6 ring-1 ring-plum/10">
         <h3 className="font-serif text-lg font-semibold text-plum-dark">Imagens</h3>
         <p className="text-xs text-plum-dark/50">
           Uma URL por linha (ex.: <code>/assets/produtos/perucas/nome-da-foto.jpg</code>). Sem
@@ -274,7 +274,7 @@ export function ProductForm({
             {toLines(values.photos).map((url) => (
               <div
                 key={url}
-                className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-plum-dark/5 ring-1 ring-plum/10"
+                className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-plum-dark/5 ring-1 ring-plum/10"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={url} alt="" className="h-full w-full object-cover" />
@@ -284,7 +284,7 @@ export function ProductForm({
         )}
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="flex flex-col gap-4 rounded bg-white p-6 ring-1 ring-plum/10">
         <h3 className="font-serif text-lg font-semibold text-plum-dark">Descrições</h3>
         <FormField label="Descrição Curta">
           <input

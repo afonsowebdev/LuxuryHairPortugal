@@ -27,7 +27,7 @@ function ContactRow({
         href={href}
         target={href.startsWith("http") ? "_blank" : undefined}
         rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-        className="group flex items-center gap-4 rounded-xl px-1 py-1 transition-colors hover:text-gold"
+        className="group flex items-center gap-4 rounded-md px-1 py-1 transition-colors hover:text-gold"
       >
         {content}
       </a>
@@ -39,7 +39,7 @@ function ContactRow({
 export function ContactInfo() {
   const { settings: storeSettings } = useAdminData();
   return (
-    <div className="flex flex-col gap-8 rounded-3xl bg-plum-dark px-7 py-8 text-cream shadow-lg sm:px-9 sm:py-10">
+    <div className="flex flex-col gap-8 rounded-md bg-plum-dark px-7 py-8 text-cream shadow-lg sm:px-9 sm:py-10">
       <div>
         <span className="text-xs font-semibold uppercase tracking-[0.3em] text-gold-light/80">
           Fale Connosco

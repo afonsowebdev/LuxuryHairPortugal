@@ -99,7 +99,7 @@ export function ProductDetailClient({ product }: { product: Product }) {
   return (
     <div className="flex flex-col gap-6">
       {isAdmin && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gold/40 bg-gold/10 px-4 py-3 text-xs text-plum-dark">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-gold/40 bg-gold/10 px-4 py-3 text-xs text-plum-dark">
           <span className="font-semibold uppercase tracking-[0.14em] text-bordeaux">
             Admin · ID {product.id} · Stock real: {product.stock}
           </span>

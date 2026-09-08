@@ -41,7 +41,7 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="flex flex-col gap-4 rounded bg-white p-6 ring-1 ring-plum/10">
         <h2 className="font-serif text-lg font-semibold text-plum-dark">Marca</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Nome da Loja">
@@ -112,7 +112,7 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="flex flex-col gap-4 rounded bg-white p-6 ring-1 ring-plum/10">
         <h2 className="font-serif text-lg font-semibold text-plum-dark">Envio</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Field label="Portugal Continental (€)">
@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="flex flex-col gap-4 rounded bg-white p-6 ring-1 ring-plum/10">
         <h2 className="font-serif text-lg font-semibold text-plum-dark">Pagamentos</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field label="Entidade Multibanco">

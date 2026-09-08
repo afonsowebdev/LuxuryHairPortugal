@@ -74,7 +74,7 @@ export default function AdminCouponsPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-1 gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-4 rounded bg-white p-6 ring-1 ring-plum/10 sm:grid-cols-2 lg:grid-cols-3"
         >
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-xs font-medium text-plum-dark/70">Código *</span>
@@ -150,7 +150,7 @@ export default function AdminCouponsPage() {
         </form>
       )}
 
-      <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-plum/10">
+      <div className="overflow-x-auto rounded bg-white ring-1 ring-plum/10">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-plum/10 text-xs uppercase tracking-wide text-plum-dark/50">
@@ -194,7 +194,7 @@ export default function AdminCouponsPage() {
                 <td className="px-5 py-3 text-right">
                   <button
                     onClick={() => handleDelete(c)}
-                    className="rounded-lg p-2 text-plum-dark/60 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                    className="rounded p-2 text-plum-dark/60 hover:bg-red-50 hover:text-red-600 cursor-pointer"
                     aria-label={`Eliminar ${c.code}`}
                   >
                     <TrashIcon className="h-4 w-4" />

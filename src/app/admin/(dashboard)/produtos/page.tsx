@@ -60,7 +60,7 @@ export default function AdminProductsPage() {
           <button
             onClick={handleExport}
             disabled={filtered.length === 0}
-            className="flex items-center gap-2 rounded-xl border border-plum/15 bg-white px-4 py-2.5 text-sm text-plum-dark hover:bg-plum-dark/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center gap-2 rounded-md border border-plum/15 bg-white px-4 py-2.5 text-sm text-plum-dark hover:bg-plum-dark/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             <DownloadIcon className="h-4 w-4" />
             Exportar
@@ -79,13 +79,13 @@ export default function AdminProductsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Pesquisar produtos..."
-            className="w-full rounded-xl border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
+            className="w-full rounded-md border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
           />
         </div>
         <Select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-xl border border-plum/15 bg-white pl-4 py-2.5 text-sm outline-none focus:border-gold"
+          className="rounded-md border border-plum/15 bg-white pl-4 py-2.5 text-sm outline-none focus:border-gold"
         >
           <option value="">Todas as categorias</option>
           {categories.map((c) => (
@@ -96,7 +96,7 @@ export default function AdminProductsPage() {
         </Select>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-plum/10">
+      <div className="overflow-x-auto rounded bg-white ring-1 ring-plum/10">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-plum/10 text-xs uppercase tracking-wide text-plum-dark/50">
@@ -112,7 +112,7 @@ export default function AdminProductsPage() {
             {filtered.map((p) => (
               <tr key={p.id} className="hover:bg-plum-dark/[0.02]">
                 <td className="flex items-center gap-3 px-5 py-3">
-                  <div className="relative h-12 w-11 shrink-0 overflow-hidden rounded-lg">
+                  <div className="relative h-12 w-11 shrink-0 overflow-hidden rounded">
                     <ProductImage
                       seed={p.slug}
                       category={p.category}
@@ -137,14 +137,14 @@ export default function AdminProductsPage() {
                   <div className="flex justify-end gap-2">
                     <Link
                       href={`/admin/produtos/${p.id}`}
-                      className="rounded-lg p-2 text-plum-dark/60 hover:bg-plum-dark/5 hover:text-plum-dark"
+                      className="rounded p-2 text-plum-dark/60 hover:bg-plum-dark/5 hover:text-plum-dark"
                       aria-label={`Editar ${p.name}`}
                     >
                       <EditIcon className="h-4 w-4" />
                     </Link>
                     <button
                       onClick={() => handleDelete(p.id, p.name)}
-                      className="rounded-lg p-2 text-plum-dark/60 hover:bg-red-50 hover:text-red-600 cursor-pointer"
+                      className="rounded p-2 text-plum-dark/60 hover:bg-red-50 hover:text-red-600 cursor-pointer"
                       aria-label={`Eliminar ${p.name}`}
                     >
                       <TrashIcon className="h-4 w-4" />

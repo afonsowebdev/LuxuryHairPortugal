@@ -466,7 +466,7 @@ export default function CheckoutPage() {
                 Código de Desconto
               </h2>
               {appliedCoupon ? (
-                <div className="flex items-center justify-between rounded-xl border border-gold/40 bg-gold/10 px-4 py-3">
+                <div className="flex items-center justify-between rounded-md border border-gold/40 bg-gold/10 px-4 py-3">
                   <div>
                     <p className="text-sm font-semibold text-plum-dark">{appliedCoupon.code}</p>
                     <p className="text-xs text-plum-dark/60">
@@ -519,7 +519,7 @@ export default function CheckoutPage() {
               <button
                 type="button"
                 onClick={() => setPayment("Multibanco")}
-                className={`flex flex-col gap-2 rounded-2xl border-2 p-5 text-left transition-colors cursor-pointer ${
+                className={`flex flex-col gap-2 rounded border-2 p-5 text-left transition-colors cursor-pointer ${
                   payment === "Multibanco" ? "border-gold bg-gold/10" : "border-plum/15"
                 }`}
               >
@@ -546,7 +546,7 @@ export default function CheckoutPage() {
               </button>
 
               <div
-                className={`rounded-2xl border-2 transition-colors ${
+                className={`rounded border-2 transition-colors ${
                   payment === "MB WAY" ? "border-gold bg-gold/10" : "border-plum/15"
                 }`}
               >
@@ -608,7 +608,7 @@ export default function CheckoutPage() {
               </div>
 
               <div
-                className="flex cursor-not-allowed items-center justify-between rounded-2xl border-2 border-plum/10 p-5 opacity-50"
+                className="flex cursor-not-allowed items-center justify-between rounded border-2 border-plum/10 p-5 opacity-50"
               >
                 <span className="font-serif text-lg font-semibold text-plum-dark">Cartão</span>
                 <span className="rounded-full bg-plum-dark/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-plum-dark/60">
@@ -617,7 +617,7 @@ export default function CheckoutPage() {
               </div>
 
               {orderError && (
-                <p role="alert" className="rounded-lg border border-bordeaux/30 bg-bordeaux/10 px-4 py-2.5 text-sm text-bordeaux">
+                <p role="alert" className="rounded border border-bordeaux/30 bg-bordeaux/10 px-4 py-2.5 text-sm text-bordeaux">
                   {orderError}
                 </p>
               )}

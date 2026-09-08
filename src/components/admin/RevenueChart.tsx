@@ -12,7 +12,7 @@ export function RevenueChart({ data }: { data: { label: string; value: number }[
           <span className="text-[11px] font-medium text-plum-dark/60">{formatEUR(d.value)}</span>
           <div className="flex w-full flex-1 items-end">
             <div
-              className="w-full rounded-t-lg bg-gradient-to-t from-bordeaux to-gold transition-all"
+              className="w-full rounded-t bg-gradient-to-t from-bordeaux to-gold transition-all"
               style={{ height: `${Math.max((d.value / max) * 100, 4)}%` }}
             />
           </div>

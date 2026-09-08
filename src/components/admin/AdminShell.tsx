@@ -64,7 +64,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
+                className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors ${
                   active ? "bg-gold/15 text-gold font-semibold" : "text-cream/70 hover:bg-cream/5 hover:text-cream"
                 }`}
               >
@@ -84,7 +84,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             logout();
             router.push("/admin/login");
           }}
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-cream/50 transition-colors hover:bg-cream/5 hover:text-cream cursor-pointer"
+          className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-cream/50 transition-colors hover:bg-cream/5 hover:text-cream cursor-pointer"
         >
           <LogoutIcon className="h-4 w-4" />
           Terminar Sessão
@@ -112,7 +112,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm ${
+                    className={`flex items-center gap-3 rounded-md px-3 py-2.5 text-sm ${
                       active ? "bg-gold/15 text-gold font-semibold" : "text-cream/70"
                     }`}
                   >
@@ -132,7 +132,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 logout();
                 router.push("/admin/login");
               }}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-cream/50 cursor-pointer"
+              className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-cream/50 cursor-pointer"
             >
               <LogoutIcon className="h-4 w-4" />
               Terminar Sessão

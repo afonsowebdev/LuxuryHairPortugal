@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-plum-dark px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-plum/40 p-8 shadow-2xl ring-1 ring-gold/10">
+      <div className="w-full max-w-sm rounded bg-plum/40 p-8 shadow-2xl ring-1 ring-gold/10">
         <div className="mb-8 flex justify-center">
           <Logo variant="gold" href="" />
         </div>
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="rounded-xl border border-cream/20 bg-transparent px-4 py-2.5 text-cream outline-none focus:border-gold"
+              className="rounded-md border border-cream/20 bg-transparent px-4 py-2.5 text-cream outline-none focus:border-gold"
             />
           </label>
           <label className="flex flex-col gap-1.5 text-sm">
@@ -58,7 +58,7 @@ export default function AdminLoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="rounded-xl border border-cream/20 bg-transparent px-4 py-2.5 text-cream outline-none focus:border-gold"
+              className="rounded-md border border-cream/20 bg-transparent px-4 py-2.5 text-cream outline-none focus:border-gold"
             />
           </label>
           {error && <p className="text-xs text-red-300">{error}</p>}
@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
           </Button>
         </form>
 
-        <p className="mt-6 rounded-xl bg-cream/5 p-3 text-center text-[11px] text-cream/40">
+        <p className="mt-6 rounded-md bg-cream/5 p-3 text-center text-[11px] text-cream/40">
           Protótipo, credenciais de demonstração: <br />
           admin@luxuryhair.pt / Admin123!
         </p>

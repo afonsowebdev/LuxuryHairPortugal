@@ -23,7 +23,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="relative flex items-center gap-2.5 rounded-xl bg-white px-4 py-3 text-sm font-medium text-plum-dark ring-1 ring-plum/10 transition-colors hover:bg-plum-dark/5"
+      className="relative flex items-center gap-2.5 rounded-md bg-white px-4 py-3 text-sm font-medium text-plum-dark ring-1 ring-plum/10 transition-colors hover:bg-plum-dark/5"
     >
       <Icon className="h-4 w-4 text-bordeaux" />
       {label}
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
         />
       </div>
 
-      <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="rounded bg-white p-6 ring-1 ring-plum/10">
         <h2 className="mb-6 font-serif text-lg font-semibold text-plum-dark">
           Receita por Mês
         </h2>
@@ -113,7 +113,7 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+        <div className="rounded bg-white p-6 ring-1 ring-plum/10">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-serif text-lg font-semibold text-plum-dark">Últimas Encomendas</h2>
             <Link href="/admin/encomendas" className="text-xs font-semibold text-bordeaux hover:underline">
@@ -146,7 +146,7 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+        <div className="rounded bg-white p-6 ring-1 ring-plum/10">
           <div className="mb-4 flex items-center gap-2">
             <TrendingUpIcon className="h-4 w-4 text-bordeaux" />
             <h2 className="font-serif text-lg font-semibold text-plum-dark">Mais Vendidos</h2>
@@ -173,7 +173,7 @@ export default function AdminDashboardPage() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+        <div className="rounded bg-white p-6 ring-1 ring-plum/10">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="font-serif text-lg font-semibold text-plum-dark">Stock Baixo</h2>
             <Link href="/admin/produtos" className="text-xs font-semibold text-bordeaux hover:underline">

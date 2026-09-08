@@ -22,7 +22,7 @@ export function AuthField({ label, icon: Icon, type, className = "", ...props }:
         <input
           type={isPassword ? (show ? "text" : "password") : type}
           {...props}
-          className={`w-full rounded-xl border border-cream/25 bg-cream/10 py-3 pl-11 text-sm text-cream outline-none backdrop-blur-sm transition-colors placeholder:text-cream/40 focus:border-gold focus:bg-cream/20 focus:ring-2 focus:ring-gold/20 ${
+          className={`w-full rounded-md border border-cream/25 bg-cream/10 py-3 pl-11 text-sm text-cream outline-none backdrop-blur-sm transition-colors placeholder:text-cream/40 focus:border-gold focus:bg-cream/20 focus:ring-2 focus:ring-gold/20 ${
             isPassword ? "pr-11" : "pr-4"
           } ${className}`}
         />

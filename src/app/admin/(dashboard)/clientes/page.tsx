@@ -42,7 +42,7 @@ export default function AdminCustomersPage() {
         <button
           onClick={handleExport}
           disabled={filtered.length === 0}
-          className="flex items-center gap-2 rounded-xl border border-plum/15 bg-white px-4 py-2.5 text-sm text-plum-dark hover:bg-plum-dark/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="flex items-center gap-2 rounded-md border border-plum/15 bg-white px-4 py-2.5 text-sm text-plum-dark hover:bg-plum-dark/5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           <DownloadIcon className="h-4 w-4" />
           Exportar CSV
@@ -55,11 +55,11 @@ export default function AdminCustomersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Pesquisar por nome ou email..."
-          className="w-full rounded-xl border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
+          className="w-full rounded-md border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
         />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-plum/10">
+      <div className="overflow-x-auto rounded bg-white ring-1 ring-plum/10">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-plum/10 text-xs uppercase tracking-wide text-plum-dark/50">

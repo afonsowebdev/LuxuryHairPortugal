@@ -54,7 +54,7 @@ export default function CartPage() {
                 <Link
                   key={c.slug}
                   href={`/loja/${c.slug}`}
-                  className="group flex items-center justify-between rounded-xl border border-plum/10 bg-white px-4 py-3 text-sm font-medium text-plum-dark shadow-sm transition-colors hover:border-gold hover:bg-gold/5"
+                  className="group flex items-center justify-between rounded-md border border-plum/10 bg-white px-4 py-3 text-sm font-medium text-plum-dark shadow-sm transition-colors hover:border-gold hover:bg-gold/5"
                 >
                   {c.name}
                   <ArrowRightIcon className="h-4 w-4 text-plum-dark/30 transition-transform group-hover:translate-x-1 group-hover:text-gold" />
@@ -89,11 +89,11 @@ export default function CartPage() {
             return (
               <div
                 key={`${line.productId}-${line.variant}`}
-                className="flex gap-4 rounded-2xl border border-plum/10 bg-white p-4 shadow-sm sm:p-5"
+                className="flex gap-4 rounded border border-plum/10 bg-white p-4 shadow-sm sm:p-5"
               >
                 <Link
                   href={`/loja/${line.slug}`}
-                  className="relative h-28 w-24 shrink-0 overflow-hidden rounded-xl bg-plum-dark/5"
+                  className="relative h-28 w-24 shrink-0 overflow-hidden rounded-md bg-plum-dark/5"
                 >
                   <ProductImage
                     seed={line.slug}
@@ -168,7 +168,7 @@ export default function CartPage() {
         </div>
 
         <aside className="w-full shrink-0 lg:w-80">
-          <div className="sticky top-[calc(var(--header-height,6rem)+1rem)] flex flex-col gap-5 rounded-2xl border border-plum/10 bg-white p-6 shadow-sm">
+          <div className="sticky top-[calc(var(--header-height,6rem)+1rem)] flex flex-col gap-5 rounded border border-plum/10 bg-white p-6 shadow-sm">
             <h2 className="font-serif text-lg font-semibold text-plum-dark">Resumo do Pedido</h2>
 
             {shipping > 0 ? (
@@ -185,7 +185,7 @@ export default function CartPage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 rounded-xl bg-gold/10 px-3 py-2 text-xs font-semibold text-gold-dark">
+              <div className="flex items-center gap-2 rounded-md bg-gold/10 px-3 py-2 text-xs font-semibold text-gold-dark">
                 <TruckIcon className="h-4 w-4" />
                 Parabéns, tem envio grátis!
               </div>

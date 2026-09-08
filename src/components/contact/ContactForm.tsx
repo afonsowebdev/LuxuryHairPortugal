@@ -80,7 +80,7 @@ export function ContactForm() {
 
   if (sent) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-3xl border border-gold/20 bg-gold/10 p-10 text-center">
+      <div className="flex flex-col items-center gap-3 rounded-md border border-gold/20 bg-gold/10 p-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold text-plum-dark">
           <CheckShieldIcon className="h-7 w-7" />
         </span>
@@ -95,7 +95,7 @@ export function ContactForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="relative flex flex-col gap-4 rounded-3xl border border-plum/10 bg-white p-6 shadow-sm sm:p-8"
+      className="relative flex flex-col gap-4 rounded-md border border-plum/10 bg-white p-6 shadow-sm sm:p-8"
       noValidate
     >
       {/* Honeypot: kept out of the tab order and off-screen (not display:none,
@@ -181,7 +181,7 @@ export function ContactForm() {
       </label>
 
       {error && (
-        <p role="alert" className="rounded-lg bg-bordeaux/10 px-3 py-2 text-xs font-medium text-bordeaux">
+        <p role="alert" className="rounded bg-bordeaux/10 px-3 py-2 text-xs font-medium text-bordeaux">
           {error}
         </p>
       )}

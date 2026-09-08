@@ -77,7 +77,7 @@ export function Testimonials() {
               <figure
                 key={t.id}
                 data-testimonial-card
-                className="flex w-[82%] shrink-0 snap-center flex-col gap-4 rounded-2xl border border-plum/10 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:w-[320px]"
+                className="flex w-[82%] shrink-0 snap-center flex-col gap-4 rounded border border-plum/10 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:w-[320px]"
               >
                 <QuoteMark />
                 <StarRating rating={t.rating} />
