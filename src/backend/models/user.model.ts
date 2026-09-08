@@ -35,9 +35,12 @@ export function createUser(input: CreateUserInput) {
   });
 }
 
-// Para o admin listar clientes — nunca devolve a password.
-export function listUsers() {
-  return prisma.user.findMany({
+// Para o admin listar clientes — nunca devolve a password. ordersCount e
+// totalSpent são derivados das encomendas reais em vez de guardados numa
+// coluna, para nunca desalinharem.
+export async function listUsers() {
+  const users = await prisma.user.findMany({
+    where: { role: "CLIENTE" },
     select: {
       id: true,
       nome: true,
@@ -47,8 +50,19 @@ export function listUsers() {
       pais: true,
       role: true,
       createdAt: true,
-      _count: { select: { orders: true } },
+      orders: {
+        select: { total: true, cidade: true, pais: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
+
+  return users.map(({ orders, ...user }) => ({
+    ...user,
+    ordersCount: orders.length,
+    totalSpent: orders.reduce((sum, o) => sum + o.total, 0),
+    ultimaCidade: orders[0]?.cidade ?? user.cidade ?? "",
+    ultimoPais: orders[0]?.pais ?? user.pais,
+  }));
 }

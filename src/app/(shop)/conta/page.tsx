@@ -9,7 +9,7 @@ import { OrderStatusBadge } from "@/components/ui/OrderStatusBadge";
 import { ClipboardIcon, LogoutIcon, MailIcon } from "@/components/ui/icons";
 import { formatDate, formatEUR } from "@/lib/format";
 import { useCustomerAuth } from "@/context/CustomerAuthContext";
-import { useAdminData } from "@/context/AdminDataContext";
+import { useCustomerOrders } from "@/hooks/useCustomerOrders";
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/);
@@ -20,7 +20,7 @@ function initials(name: string) {
 
 export default function CustomerAccountPage() {
   const { customer, hydrated, logout } = useCustomerAuth();
-  const { orders } = useAdminData();
+  const { orders } = useCustomerOrders();
   const router = useRouter();
 
   useEffect(() => {
@@ -29,13 +29,10 @@ export default function CustomerAccountPage() {
     }
   }, [hydrated, customer, router]);
 
-  const myOrders = useMemo(() => {
-    if (!customer) return [];
-    const email = customer.email.toLowerCase();
-    return orders
-      .filter((o) => o.customer.email.toLowerCase() === email)
-      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
-  }, [orders, customer]);
+  const myOrders = useMemo(
+    () => [...orders].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)),
+    [orders]
+  );
 
   const totalSpent = useMemo(
     () => myOrders.reduce((sum, o) => sum + o.total, 0),

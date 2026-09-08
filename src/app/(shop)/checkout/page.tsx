@@ -14,6 +14,7 @@ import { formatEUR } from "@/lib/format";
 import { savePendingOrder } from "@/lib/orderStore";
 import type { ApiOrder } from "@/lib/mappers/order";
 import { getCustomerToken } from "@/context/CustomerAuthContext";
+import { useCustomerOrders } from "@/hooks/useCustomerOrders";
 import type { Coupon, Order } from "@/types";
 
 interface ApiEnvelope<T> {
@@ -65,21 +66,21 @@ export default function CheckoutPage() {
   const {
     settings: storeSettings,
     getCouponByCode,
-    orders,
-    hydrated: dataHydrated,
+    updateCoupon,
     refreshProducts,
   } = useAdminData();
   const { customer, hydrated: authHydrated } = useCustomerAuth();
+  const { orders, hydrated: ordersHydrated } = useCustomerOrders();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<CustomerForm>(emptyForm);
 
-  // Once the customer's account and the order history are both hydrated
-  // from localStorage, pre-fill the form with their account details and
-  // their most recent shipping address, so a returning customer doesn't
-  // have to retype everything. Guests (no session) see the form untouched.
+  // Once the customer's account and their order history are both hydrated,
+  // pre-fill the form with their account details and their most recent
+  // shipping address, so a returning customer doesn't have to retype
+  // everything. Guests (no session) see the form untouched.
   useEffect(() => {
-    if (!authHydrated || !dataHydrated || !customer) return;
+    if (!authHydrated || !ordersHydrated || !customer) return;
     const email = customer.email.toLowerCase();
     const lastOrder = orders
       .filter((o) => o.customer.email.toLowerCase() === email)
@@ -96,7 +97,7 @@ export default function CheckoutPage() {
       postalCode: f.postalCode || lastOrder?.customer.postalCode || "",
       country: lastOrder?.customer.country || f.country,
     }));
-  }, [authHydrated, dataHydrated, customer, orders]);
+  }, [authHydrated, ordersHydrated, customer, orders]);
   const [payment, setPayment] = useState<"Multibanco" | "MB WAY" | "Cartão">("Multibanco");
   const [submitting, setSubmitting] = useState(false);
   const [mbwayPhone, setMbwayPhone] = useState("");
@@ -237,6 +238,10 @@ export default function CheckoutPage() {
     };
 
     savePendingOrder(order);
+
+    if (appliedCoupon) {
+      updateCoupon(appliedCoupon.id, { usageCount: appliedCoupon.usageCount + 1 });
+    }
 
     if (payment === "MB WAY") {
       await fetch("/api/payment/webhook", {

@@ -19,25 +19,22 @@ import type {
   ContactMessage,
   NewsletterSubscriber,
 } from "@/types";
-import { orders as seedOrders } from "@/lib/data/orders";
-import { customers as seedCustomers } from "@/lib/data/customers";
 import { categories as seedCategories } from "@/lib/data/categories";
 import { coupons as seedCoupons } from "@/lib/data/coupons";
 import { contactMessages as seedMessages, newsletterSubscribers as seedSubscribers } from "@/lib/data/messages";
 import { defaultStoreSettings, type StoreSettings } from "@/lib/data/settings";
 import { mapApiProduct, buildProductPayload, type ApiProduct } from "@/lib/mappers/product";
-import { getAdminToken } from "@/context/AdminAuthContext";
+import { mapApiOrder, type ApiOrder } from "@/lib/mappers/order";
+import { mapApiCustomer, type ApiCustomer } from "@/lib/mappers/customer";
+import { getAdminToken, useAdminAuth } from "@/context/AdminAuthContext";
 
 /**
- * O catálogo (produtos) já vive na base de dados real e chega via
- * /api/products (loja) e /api/admin/products (CRUD no painel). Encomendas,
- * clientes, categorias, cupões, mensagens, newsletter e definições ainda
- * vivem em localStorage — ver "Loja primeiro" no README para o que falta
- * migrar.
+ * Produtos, encomendas e clientes já vivem na base de dados real e chegam
+ * via /api/products + /api/admin/*. Categorias, cupões, mensagens,
+ * newsletter e definições ainda vivem em localStorage — ver "Loja primeiro"
+ * no README para o que falta migrar.
  */
 const KEYS = {
-  orders: "lhp_admin_orders_v2",
-  customers: "lhp_admin_customers_v2",
   categories: "lhp_admin_categories_v1",
   coupons: "lhp_admin_coupons_v1",
   messages: "lhp_admin_messages_v1",
@@ -85,6 +82,26 @@ async function fetchCategoryIdBySlug(): Promise<Record<string, string>> {
   }
 }
 
+const ORDER_STATUS_TO_ESTADO: Record<OrderStatus, string> = {
+  "A aguardar pagamento": "PENDENTE",
+  Pago: "PAGO",
+  Enviado: "ENVIADO",
+  Concluído: "ENTREGUE",
+  Cancelado: "CANCELADO",
+};
+
+async function fetchAdminOrders(): Promise<Order[]> {
+  const res = await callAdminApi<ApiOrder[]>("/admin/orders", "GET");
+  if (!res.success || !res.data) return [];
+  return res.data.map(mapApiOrder);
+}
+
+async function fetchAdminCustomers(): Promise<Customer[]> {
+  const res = await callAdminApi<ApiCustomer[]>("/admin/users", "GET");
+  if (!res.success || !res.data) return [];
+  return res.data.map(mapApiCustomer);
+}
+
 async function callAdminApi<T>(endpoint: string, method: string, body?: unknown) {
   const token = getAdminToken();
   const res = await fetch(`/api${endpoint}`, {
@@ -115,8 +132,6 @@ interface AdminDataContextValue {
   deleteProduct: (id: string) => void;
 
   updateOrderStatus: (id: string, status: OrderStatus) => void;
-  /** Regista uma encomenda real do checkout: cria a encomenda, baixa o stock dos produtos vendidos, aplica o cupão (se usado) e cria/atualiza o cliente. */
-  placeOrder: (order: Order) => void;
 
   updateCategory: (slug: CategorySlug, patch: Partial<Category>) => void;
 
@@ -141,10 +156,11 @@ interface AdminDataContextValue {
 const AdminDataContext = createContext<AdminDataContextValue | undefined>(undefined);
 
 export function AdminDataProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated: isAdminAuthenticated } = useAdminAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [categoryIdBySlug, setCategoryIdBySlug] = useState<Record<string, string>>({});
-  const [orders, setOrders] = useState<Order[]>(seedOrders);
-  const [customers, setCustomers] = useState<Customer[]>(seedCustomers);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [categories, setCategories] = useState<Category[]>(seedCategories);
   const [coupons, setCoupons] = useState<Coupon[]>(seedCoupons);
   const [messages, setMessages] = useState<ContactMessage[]>(seedMessages);
@@ -156,8 +172,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     // localStorage is unavailable during SSR, so admin data can only be
     // hydrated client-side after mount.
     /* eslint-disable react-hooks/set-state-in-effect */
-    setOrders(loadOrSeed(KEYS.orders, seedOrders));
-    setCustomers(loadOrSeed(KEYS.customers, seedCustomers));
     setCategories(loadOrSeed(KEYS.categories, seedCategories));
     setCoupons(loadOrSeed(KEYS.coupons, seedCoupons));
     setMessages(loadOrSeed(KEYS.messages, seedMessages));
@@ -172,12 +186,21 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Encomendas e clientes são geridos no admin — só há um token para os
+  // pedir quando a sessão de admin está autenticada.
   useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.orders, JSON.stringify(orders));
-  }, [orders, hydrated]);
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.customers, JSON.stringify(customers));
-  }, [customers, hydrated]);
+    if (!isAdminAuthenticated) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOrders([]);
+      setCustomers([]);
+      return;
+    }
+    Promise.all([fetchAdminOrders(), fetchAdminCustomers()]).then(([apiOrders, apiCustomers]) => {
+      setOrders(apiOrders);
+      setCustomers(apiCustomers);
+    });
+  }, [isAdminAuthenticated]);
+
   useEffect(() => {
     if (hydrated) window.localStorage.setItem(KEYS.categories, JSON.stringify(categories));
   }, [categories, hydrated]);
@@ -243,48 +266,16 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   }
 
   function updateOrderStatus(id: string, status: OrderStatus) {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status } : o)));
-  }
-
-  function placeOrder(order: Order) {
-    setOrders((prev) => [order, ...prev]);
-
-    setProducts((prev) =>
-      prev.map((p) => {
-        const line = order.items.find((i) => i.productId === p.id);
-        return line ? { ...p, stock: Math.max(0, p.stock - line.quantity) } : p;
-      })
-    );
-
-    if (order.couponCode) {
-      const code = order.couponCode.trim().toUpperCase();
-      setCoupons((prev) =>
-        prev.map((c) => (c.code.toUpperCase() === code ? { ...c, usageCount: c.usageCount + 1 } : c))
-      );
-    }
-
-    setCustomers((prev) => {
-      const email = order.customer.email.trim().toLowerCase();
-      const idx = prev.findIndex((c) => c.email.toLowerCase() === email);
-      if (idx === -1) {
-        const newCustomer: Customer = {
-          id: `c-${Date.now()}`,
-          name: order.customer.name,
-          email: order.customer.email,
-          phone: order.customer.phone,
-          location: `${order.customer.city}, ${order.customer.country}`,
-          ordersCount: 1,
-          totalSpent: order.total,
-          since: order.createdAt,
-        };
-        return [newCustomer, ...prev];
+    callAdminApi<ApiOrder>("/admin/orders", "PUT", { id, estado: ORDER_STATUS_TO_ESTADO[status] }).then(
+      (res) => {
+        if (res.success && res.data) {
+          const updated = mapApiOrder(res.data);
+          setOrders((prev) => prev.map((o) => (o.id === id ? updated : o)));
+        } else {
+          console.error("updateOrderStatus:", res.message);
+        }
       }
-      return prev.map((c, i) =>
-        i === idx
-          ? { ...c, ordersCount: c.ordersCount + 1, totalSpent: c.totalSpent + order.total }
-          : c
-      );
-    });
+    );
   }
 
   function updateCategory(slug: CategorySlug, patch: Partial<Category>) {
@@ -371,7 +362,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         updateProduct,
         deleteProduct,
         updateOrderStatus,
-        placeOrder,
         updateCategory,
         addCoupon,
         updateCoupon,
