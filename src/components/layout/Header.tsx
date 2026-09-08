@@ -189,7 +189,7 @@ export function Header() {
                 className="absolute inset-0 scale-75 rounded-full border border-transparent bg-transparent opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:border-gold/30 group-hover:bg-gold/10 group-hover:opacity-100 group-active:scale-100 group-active:border-gold/30 group-active:bg-gold/10 group-active:opacity-100"
               />
               <UserIcon
-                className="relative h-6 w-6 group-hover:animate-icon-shake group-active:animate-icon-shake"
+                className="relative h-5 w-5 sm:h-6 sm:w-6 group-hover:animate-icon-shake group-active:animate-icon-shake"
                 filled={isAuthenticated}
               />
             </Link>
@@ -204,7 +204,7 @@ export function Header() {
               />
               <HeartIcon
                 key={wishlistBumpKey}
-                className={`relative h-6 w-6 group-hover:animate-icon-shake group-active:animate-icon-shake ${
+                className={`relative h-5 w-5 sm:h-6 sm:w-6 group-hover:animate-icon-shake group-active:animate-icon-shake ${
                   wishlistBumpKey > 0 ? "animate-icon-shake" : ""
                 }`}
                 filled={wishlistCount > 0}
@@ -226,7 +226,7 @@ export function Header() {
               />
               <CartIcon
                 key={cartBumpKey}
-                className={`relative h-6 w-6 group-hover:animate-icon-shake group-active:animate-icon-shake ${
+                className={`relative h-5 w-5 sm:h-6 sm:w-6 group-hover:animate-icon-shake group-active:animate-icon-shake ${
                   cartBumpKey > 0 ? "animate-icon-shake" : ""
                 }`}
               />
