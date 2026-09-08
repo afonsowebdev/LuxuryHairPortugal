@@ -7,10 +7,11 @@ import { Logo } from "@/components/ui/Logo";
 import { CartIcon } from "@/components/ui/CartIcon";
 import { HamburgerIcon } from "@/components/ui/HamburgerIcon";
 import { MobileMenuOverlay } from "@/components/layout/MobileMenuOverlay";
-import { PhoneIcon, InstagramIcon, HeartIcon } from "@/components/ui/icons";
+import { PhoneIcon, InstagramIcon, HeartIcon, UserIcon } from "@/components/ui/icons";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAdminData } from "@/context/AdminDataContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { MENU_TRANSITION_MS } from "@/lib/motion";
 
 const navLinks = [
@@ -29,14 +30,19 @@ export function Header() {
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { settings: storeSettings } = useAdminData();
+  const { customer, isAuthenticated } = useCustomerAuth();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
 
   const headerRef = useRef<HTMLElement>(null);
 
   const isHome = pathname === "/";
-  const transparent = isHome && !scrolled;
-  const shrink = isHome && scrolled;
+  // Pages with a full-bleed hero-style video background need the same
+  // transparent-over-video header treatment as the homepage.
+  const isAuthPage = pathname === "/conta/criar" || pathname === "/conta/entrar";
+  const isImmersive = isHome || isAuthPage;
+  const transparent = isImmersive && !scrolled;
+  const shrink = isImmersive && scrolled;
 
   // Publishes the header's real rendered height as a CSS variable so other
   // fixed/sticky elements (e.g. the cart/checkout order-summary sidebar) can
@@ -52,17 +58,17 @@ export function Header() {
     const observer = new ResizeObserver(update);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isHome, scrolled]);
+  }, [isImmersive, scrolled]);
 
   useEffect(() => {
-    if (!isHome) return;
+    if (!isImmersive) return;
     function onScroll() {
       setScrolled(window.scrollY > 40);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
+  }, [isImmersive]);
 
   // Nudges the header's cart/wishlist icons with the same shake used on
   // hover whenever an item is added, so the feedback is visible even if the
@@ -98,7 +104,7 @@ export function Header() {
   }
 
   return (
-    <header ref={headerRef} className={`z-50 ${isHome ? "fixed inset-x-0 top-0" : "sticky top-0"}`}>
+    <header ref={headerRef} className={`z-50 ${isImmersive ? "fixed inset-x-0 top-0" : "sticky top-0"}`}>
       <div
         className={`hidden text-cream/80 sm:block transition-colors duration-300 ${
           transparent ? "bg-transparent" : "bg-plum-dark"
@@ -128,7 +134,7 @@ export function Header() {
         className={`border-b transition-colors duration-300 ${
           transparent
             ? "border-transparent bg-transparent"
-            : isHome
+            : isImmersive
               ? "border-gold/10 bg-plum/70 backdrop-blur-lg supports-[backdrop-filter]:bg-plum/55"
               : "border-gold/10 bg-plum/95 backdrop-blur-sm supports-[backdrop-filter]:bg-plum/90"
         }`}
@@ -156,21 +162,37 @@ export function Header() {
             />
           </div>
 
-          <nav className="hidden flex-1 justify-center gap-7 lg:flex" aria-label="Navegação principal">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-xs font-medium uppercase tracking-[0.14em] transition-colors hover:text-gold ${
-                  pathname === link.href ? "text-gold" : "text-cream/90"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          {!isAuthPage && (
+            <nav className="hidden flex-1 justify-center gap-7 lg:flex" aria-label="Navegação principal">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-xs font-medium uppercase tracking-[0.14em] transition-colors hover:text-gold ${
+                    pathname === link.href ? "text-gold" : "text-cream/90"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+          )}
 
           <div className="flex items-center">
+            <Link
+              href={isAuthenticated ? "/conta" : "/conta/entrar"}
+              className="group relative flex items-center gap-2 p-2 text-cream hover:text-gold active:text-gold"
+              aria-label={isAuthenticated ? `A minha conta, ${customer?.name}` : "Entrar ou criar conta"}
+            >
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 scale-75 rounded-full border border-transparent bg-transparent opacity-0 transition-all duration-300 ease-out group-hover:scale-100 group-hover:border-gold/30 group-hover:bg-gold/10 group-hover:opacity-100 group-active:scale-100 group-active:border-gold/30 group-active:bg-gold/10 group-active:opacity-100"
+              />
+              <UserIcon
+                className="relative h-6 w-6 group-hover:animate-icon-shake group-active:animate-icon-shake"
+                filled={isAuthenticated}
+              />
+            </Link>
             <Link
               href="/favoritos"
               className="group relative flex items-center gap-2 p-2 text-cream hover:text-gold active:text-gold"

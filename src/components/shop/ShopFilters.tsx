@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import type { Category, CategorySlug } from "@/types";
 import { formatEUR } from "@/lib/format";
 import { getSwatchStyle, isLightSwatch } from "@/lib/colorSwatches";
-import { FilterIcon } from "@/components/ui/icons";
+import { FilterIcon, CheckIcon, ChevronDownIcon } from "@/components/ui/icons";
 
 export interface FilterState {
   categorySlugs: CategorySlug[];
@@ -35,13 +36,38 @@ interface ShopFiltersProps {
 }
 
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(true);
   return (
-    <div className="border-b border-plum/10 py-5 first:pt-0 last:border-0 last:pb-0">
-      <h3 className="mb-3.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-bordeaux">
-        <span className="h-1 w-1 rounded-full bg-gold" aria-hidden="true" />
-        {title}
-      </h3>
-      <div className="flex flex-col gap-1">{children}</div>
+    <div className="py-5 first:pt-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full cursor-pointer items-center justify-between text-left"
+      >
+        <h3 className="font-serif text-base font-normal text-plum-dark">{title}</h3>
+        <ChevronDownIcon
+          className={`h-4 w-4 text-plum-dark/50 transition-transform duration-200 ${
+            open ? "" : "-rotate-90"
+          }`}
+        />
+      </button>
+      <div className="mt-3 border-b border-plum/10" />
+      <div
+        className={`grid transition-[grid-template-rows] duration-300 ease-out ${
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div
+            className={`flex flex-col gap-5 pt-5 transition-opacity duration-300 ${
+              open ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {children}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -60,26 +86,29 @@ function CheckboxRow({
   swatchColor?: string;
 }) {
   return (
-    <label className="-mx-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-plum-dark/80 transition-colors hover:bg-plum-dark/5">
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="h-4 w-4 shrink-0 rounded border-plum/30 text-gold accent-gold focus:ring-gold"
-      />
+    <label className="flex cursor-pointer items-center gap-3 text-sm text-plum-dark/80 transition-colors hover:text-plum-dark">
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
+      <span
+        aria-hidden="true"
+        className={`flex h-5 w-5 shrink-0 items-center justify-center border transition-colors ${
+          checked ? "border-plum-dark bg-plum-dark" : "border-plum/25 bg-plum-dark/[0.03]"
+        }`}
+      >
+        {checked && <CheckIcon className="h-3.5 w-3.5 text-cream" />}
+      </span>
       {swatchColor && (
         <span
           aria-hidden="true"
-          className={`h-4 w-4 shrink-0 rounded-full ${
-            isLightSwatch(swatchColor) ? "ring-1 ring-plum/25" : "ring-1 ring-black/10"
+          className={`h-4 w-4 shrink-0 ring-1 ${
+            isLightSwatch(swatchColor) ? "ring-plum/30" : "ring-black/10"
           }`}
           style={getSwatchStyle(swatchColor)}
         />
       )}
-      <span className={`flex-1 ${checked ? "font-medium text-plum-dark" : ""}`}>{label}</span>
-      {typeof count === "number" && (
-        <span className="text-xs text-plum-dark/35">{count}</span>
-      )}
+      <span className={checked ? "font-medium text-plum-dark" : ""}>
+        {label}
+        {typeof count === "number" && <span className="ml-1 text-plum-dark/40">({count})</span>}
+      </span>
     </label>
   );
 }
@@ -110,12 +139,12 @@ export function ShopFilters({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center justify-between pb-5">
-        <h2 className="flex items-center gap-2 font-serif text-xl font-semibold text-plum-dark">
+      <div className="flex items-center justify-between border-b border-plum/10 pb-5">
+        <h2 className="flex items-center gap-2.5 font-serif text-base font-normal uppercase tracking-[0.08em] text-plum-dark">
           <FilterIcon className="h-5 w-5 text-gold" />
           Filtros
           {activeCount > 0 && (
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-plum-dark">
+            <span className="flex h-5 min-w-5 items-center justify-center bg-gold px-1.5 font-sans text-[11px] font-bold normal-case tracking-normal text-plum-dark">
               {activeCount}
             </span>
           )}
@@ -188,8 +217,8 @@ export function ShopFilters({
       )}
 
       <FilterGroup title="Preço">
-        <div className="flex flex-col gap-3 rounded-xl bg-plum-dark/[0.03] p-3.5">
-          <span className="self-center rounded-full bg-plum-dark px-3 py-1 text-xs font-semibold text-cream">
+        <div className="flex flex-col gap-3 bg-plum-dark/[0.03] p-3.5">
+          <span className="self-center bg-plum-dark px-3 py-1 text-xs font-semibold text-cream">
             Até {formatEUR(state.maxPrice)}
           </span>
           <input

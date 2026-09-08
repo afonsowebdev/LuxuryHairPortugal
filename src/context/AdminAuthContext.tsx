@@ -8,48 +8,65 @@ import {
   type ReactNode,
 } from "react";
 
-/**
- * PROTOTYPE ONLY — hardcoded credentials with a sessionStorage flag.
- * A real implementation must authenticate against a backend (e.g. NextAuth,
- * a custom API with hashed passwords, or a third-party auth provider) and
- * never ship credentials in client-side code.
- */
-const DEMO_EMAIL = "admin@luxuryhairportugal.pt";
-const DEMO_PASSWORD = "luxury2026";
-const SESSION_KEY = "lhp_admin_session";
+const TOKEN_KEY = "lhp_admin_token";
 
 interface AdminAuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => boolean;
+  login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T | null;
+  message: string;
+}
+
+interface AuthResponse {
+  token: string;
+  user: { nome: string; email: string; role: "CLIENTE" | "ADMIN" };
+}
+
 const AdminAuthContext = createContext<AdminAuthContextValue | undefined>(undefined);
+
+export function getAdminToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(TOKEN_KEY);
+}
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // sessionStorage is unavailable during SSR, so session state can only
-    // be read client-side after mount.
+    // localStorage is unavailable during SSR, so session state can only be
+    // read client-side after mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsAuthenticated(window.sessionStorage.getItem(SESSION_KEY) === "true");
+    setIsAuthenticated(!!window.localStorage.getItem(TOKEN_KEY));
     setIsLoading(false);
   }, []);
 
-  function login(email: string, password: string) {
-    const ok = email.trim().toLowerCase() === DEMO_EMAIL && password === DEMO_PASSWORD;
-    if (ok) {
-      window.sessionStorage.setItem(SESSION_KEY, "true");
+  async function login(email: string, password: string): Promise<boolean> {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = (await res.json()) as ApiEnvelope<AuthResponse>;
+      if (!json.success || !json.data || json.data.user.role !== "ADMIN") return false;
+
+      window.localStorage.setItem(TOKEN_KEY, json.data.token);
       setIsAuthenticated(true);
+      return true;
+    } catch {
+      return false;
     }
-    return ok;
   }
 
   function logout() {
-    window.sessionStorage.removeItem(SESSION_KEY);
+    window.localStorage.removeItem(TOKEN_KEY);
     setIsAuthenticated(false);
   }
 
@@ -65,5 +82,3 @@ export function useAdminAuth() {
   if (!ctx) throw new Error("useAdminAuth must be used within AdminAuthProvider");
   return ctx;
 }
-
-export const DEMO_CREDENTIALS = { email: DEMO_EMAIL, password: DEMO_PASSWORD };

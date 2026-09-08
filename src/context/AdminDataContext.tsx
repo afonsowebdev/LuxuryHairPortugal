@@ -19,24 +19,23 @@ import type {
   ContactMessage,
   NewsletterSubscriber,
 } from "@/types";
-import { products as seedProducts } from "@/lib/data/products";
 import { orders as seedOrders } from "@/lib/data/orders";
 import { customers as seedCustomers } from "@/lib/data/customers";
 import { categories as seedCategories } from "@/lib/data/categories";
 import { coupons as seedCoupons } from "@/lib/data/coupons";
 import { contactMessages as seedMessages, newsletterSubscribers as seedSubscribers } from "@/lib/data/messages";
 import { defaultStoreSettings, type StoreSettings } from "@/lib/data/settings";
+import { mapApiProduct, buildProductPayload, type ApiProduct } from "@/lib/mappers/product";
+import { getAdminToken } from "@/context/AdminAuthContext";
 
 /**
- * PROTOTYPE ONLY — todo o estado da loja (catálogo, encomendas, clientes,
- * categorias, cupões, mensagens, newsletter e definições) vive em
- * localStorage e é partilhado entre o admin e a loja pública através deste
- * contexto — é a única fonte de verdade, para que qualquer alteração feita
- * no admin se reflita de imediato na loja. Uma produção real deve substituir
- * isto por chamadas a uma API ligada a uma base de dados.
+ * O catálogo (produtos) já vive na base de dados real e chega via
+ * /api/products (loja) e /api/admin/products (CRUD no painel). Encomendas,
+ * clientes, categorias, cupões, mensagens, newsletter e definições ainda
+ * vivem em localStorage — ver "Loja primeiro" no README para o que falta
+ * migrar.
  */
 const KEYS = {
-  products: "lhp_admin_products_v3",
   orders: "lhp_admin_orders_v2",
   customers: "lhp_admin_customers_v2",
   categories: "lhp_admin_categories_v1",
@@ -56,6 +55,47 @@ function loadOrSeed<T>(key: string, seed: T): T {
   }
   window.localStorage.setItem(key, JSON.stringify(seed));
   return seed;
+}
+
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T | null;
+  message: string;
+}
+
+async function fetchStoreProducts(): Promise<Product[]> {
+  try {
+    const res = await fetch("/api/products?limit=50");
+    const json = (await res.json()) as ApiEnvelope<{ items: ApiProduct[] }>;
+    if (!json.success || !json.data) return [];
+    return json.data.items.map(mapApiProduct);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchCategoryIdBySlug(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch("/api/categories");
+    const json = (await res.json()) as ApiEnvelope<{ id: string; slug: string }[]>;
+    if (!json.success || !json.data) return {};
+    return Object.fromEntries(json.data.map((c) => [c.slug, c.id]));
+  } catch {
+    return {};
+  }
+}
+
+async function callAdminApi<T>(endpoint: string, method: string, body?: unknown) {
+  const token = getAdminToken();
+  const res = await fetch(`/api${endpoint}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  return (await res.json()) as ApiEnvelope<T>;
 }
 
 interface AdminDataContextValue {
@@ -94,12 +134,15 @@ interface AdminDataContextValue {
 
   getProductBySlug: (slug: string) => Product | undefined;
   getProductById: (id: string) => Product | undefined;
+  /** Recarrega o catálogo a partir da API — chamado depois do checkout para refletir o stock atualizado. */
+  refreshProducts: () => void;
 }
 
 const AdminDataContext = createContext<AdminDataContextValue | undefined>(undefined);
 
 export function AdminDataProvider({ children }: { children: ReactNode }) {
-  const [products, setProducts] = useState<Product[]>(seedProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categoryIdBySlug, setCategoryIdBySlug] = useState<Record<string, string>>({});
   const [orders, setOrders] = useState<Order[]>(seedOrders);
   const [customers, setCustomers] = useState<Customer[]>(seedCustomers);
   const [categories, setCategories] = useState<Category[]>(seedCategories);
@@ -113,7 +156,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     // localStorage is unavailable during SSR, so admin data can only be
     // hydrated client-side after mount.
     /* eslint-disable react-hooks/set-state-in-effect */
-    setProducts(loadOrSeed(KEYS.products, seedProducts));
     setOrders(loadOrSeed(KEYS.orders, seedOrders));
     setCustomers(loadOrSeed(KEYS.customers, seedCustomers));
     setCategories(loadOrSeed(KEYS.categories, seedCategories));
@@ -121,13 +163,15 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     setMessages(loadOrSeed(KEYS.messages, seedMessages));
     setSubscribers(loadOrSeed(KEYS.subscribers, seedSubscribers));
     setSettings(loadOrSeed(KEYS.settings, defaultStoreSettings));
-    setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+
+    Promise.all([fetchStoreProducts(), fetchCategoryIdBySlug()]).then(([apiProducts, idBySlug]) => {
+      setProducts(apiProducts);
+      setCategoryIdBySlug(idBySlug);
+      setHydrated(true);
+    });
   }, []);
 
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.products, JSON.stringify(products));
-  }, [products, hydrated]);
   useEffect(() => {
     if (hydrated) window.localStorage.setItem(KEYS.orders, JSON.stringify(orders));
   }, [orders, hydrated]);
@@ -151,15 +195,51 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   }, [settings, hydrated]);
 
   function addProduct(product: Product) {
-    setProducts((prev) => [product, ...prev]);
+    const categoriaId = categoryIdBySlug[product.category];
+    if (!categoriaId) {
+      console.error(`addProduct: categoria "${product.category}" desconhecida.`);
+      return;
+    }
+    callAdminApi<ApiProduct>("/admin/products", "POST", buildProductPayload(product, categoriaId)).then(
+      (res) => {
+        if (res.success && res.data) {
+          setProducts((prev) => [mapApiProduct(res.data as ApiProduct), ...prev]);
+        } else {
+          console.error("addProduct:", res.message);
+        }
+      }
+    );
   }
 
   function updateProduct(id: string, patch: Partial<Product>) {
-    setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+    const current = products.find((p) => p.id === id);
+    if (!current) return;
+    const merged = { ...current, ...patch };
+    const categoriaId = categoryIdBySlug[merged.category];
+    if (!categoriaId) {
+      console.error(`updateProduct: categoria "${merged.category}" desconhecida.`);
+      return;
+    }
+    callAdminApi<ApiProduct>("/admin/products", "PUT", { id, ...buildProductPayload(merged, categoriaId) }).then(
+      (res) => {
+        if (res.success && res.data) {
+          const updated = mapApiProduct(res.data as ApiProduct);
+          setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+        } else {
+          console.error("updateProduct:", res.message);
+        }
+      }
+    );
   }
 
   function deleteProduct(id: string) {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    callAdminApi("/admin/products", "DELETE", { id }).then((res) => {
+      if (res.success) {
+        setProducts((prev) => prev.filter((p) => p.id !== id));
+      } else {
+        console.error("deleteProduct:", res.message);
+      }
+    });
   }
 
   function updateOrderStatus(id: string, status: OrderStatus) {
@@ -271,6 +351,10 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
     [products]
   );
 
+  function refreshProducts() {
+    fetchStoreProducts().then(setProducts);
+  }
+
   return (
     <AdminDataContext.Provider
       value={{
@@ -300,6 +384,7 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         updateSettings,
         getProductBySlug,
         getProductById,
+        refreshProducts,
       }}
     >
       {children}

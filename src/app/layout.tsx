@@ -5,6 +5,7 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { AdminDataProvider } from "@/context/AdminDataContext";
+import { CustomerAuthProvider } from "@/context/CustomerAuthContext";
 
 const heading = Poppins({
   variable: "--font-serif",
@@ -57,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-PT"
-      className={`${heading.variable} ${sans.variable} ${script.variable} h-full antialiased`}
+      className={`${heading.variable} ${sans.variable} ${script.variable} no-scrollbar h-full antialiased`}
     >
       <head>
         <link
@@ -68,9 +69,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-cream text-plum-dark">
         <AdminAuthProvider>
           <AdminDataProvider>
-            <CartProvider>
-              <WishlistProvider>{children}</WishlistProvider>
-            </CartProvider>
+            <CustomerAuthProvider>
+              <CartProvider>
+                <WishlistProvider>{children}</WishlistProvider>
+              </CartProvider>
+            </CustomerAuthProvider>
           </AdminDataProvider>
         </AdminAuthProvider>
       </body>

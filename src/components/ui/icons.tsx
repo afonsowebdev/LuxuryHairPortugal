@@ -118,6 +118,10 @@ export function EyeIcon({ className }: IconProps) {
   return <BxIcon name="bx-show" className={className} />;
 }
 
+export function EyeOffIcon({ className }: IconProps) {
+  return <BxIcon name="bx-hide" className={className} />;
+}
+
 export function SearchIcon({ className }: IconProps) {
   return <BxIcon name="bx-search" className={className} />;
 }
@@ -216,6 +220,10 @@ export function BagIcon({ className }: IconProps) {
 
 export function ArrowRightIcon({ className }: IconProps) {
   return <BxIcon name="bx-right-arrow-alt" className={className} />;
+}
+
+export function UserIcon({ className, filled = false }: IconProps & { filled?: boolean }) {
+  return <BxIcon name={filled ? "bxs-user-circle" : "bx-user-circle"} className={className} />;
 }
 
 export function StarIcon({ className, filled = false }: IconProps & { filled?: boolean }) {

@@ -10,8 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import type { CartLine } from "@/types";
-
-const STORAGE_KEY = "lhp_cart_v1";
+import { getCustomerToken, useCustomerAuth } from "@/context/CustomerAuthContext";
 
 interface CartContextValue {
   lines: CartLine[];
@@ -26,66 +25,129 @@ interface CartContextValue {
   closeDrawer: () => void;
 }
 
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T | null;
+  message: string;
+}
+
+interface ApiCartItem {
+  id: string;
+  productId: string;
+  variante: string;
+  quantidade: number;
+  product: {
+    slug: string;
+    nome: string;
+    preco: number;
+    precoPromocional: number | null;
+    imagemPrincipal: string | null;
+    stock: number;
+  };
+}
+
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
 function lineKey(productId: string, variant: string) {
   return `${productId}__${variant}`;
 }
 
+function mapApiCartItem(item: ApiCartItem): CartLine & { cartId: string } {
+  return {
+    cartId: item.id,
+    productId: item.productId,
+    slug: item.product.slug,
+    name: item.product.nome,
+    image: item.product.nome,
+    price: item.product.precoPromocional ?? item.product.preco,
+    variant: item.variante || "Padrão",
+    quantity: item.quantidade,
+    stock: item.product.stock,
+  };
+}
+
+async function callApi<T>(endpoint: string, method: string, body?: unknown) {
+  const token = getCustomerToken();
+  try {
+    const res = await fetch(`/api${endpoint}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    return (await res.json()) as ApiEnvelope<T>;
+  } catch {
+    return { success: false, data: null, message: "Não foi possível ligar ao servidor." } as ApiEnvelope<T>;
+  }
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [lines, setLines] = useState<CartLine[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const { isAuthenticated } = useCustomerAuth();
+  const [lines, setLines] = useState<(CartLine & { cartId: string })[]>([]);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
 
-  useEffect(() => {
-    // One-time hydration from localStorage on mount; localStorage is
-    // unavailable during SSR, so this must run client-side after mount.
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (raw) setLines(JSON.parse(raw));
-    } catch {
-      // ignore corrupted storage
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
-  }, [lines, hydrated]);
-
-  const addItem = useCallback((line: Omit<CartLine, "quantity">, quantity = 1) => {
-    setLines((prev) => {
-      const key = lineKey(line.productId, line.variant);
-      const existing = prev.find((l) => lineKey(l.productId, l.variant) === key);
-      if (existing) {
-        return prev.map((l) =>
-          lineKey(l.productId, l.variant) === key
-            ? { ...l, quantity: Math.min(l.quantity + quantity, l.stock) }
-            : l
-        );
-      }
-      return [...prev, { ...line, quantity: Math.min(quantity, line.stock) }];
+  const refresh = useCallback(() => {
+    callApi<ApiCartItem[]>("/cart", "GET").then((res) => {
+      if (res.success && res.data) setLines(res.data.map(mapApiCartItem));
     });
-    setDrawerOpen(true);
   }, []);
 
-  const removeItem = useCallback((productId: string, variant: string) => {
-    setLines((prev) => prev.filter((l) => lineKey(l.productId, l.variant) !== lineKey(productId, variant)));
-  }, []);
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
-  const updateQuantity = useCallback((productId: string, variant: string, quantity: number) => {
-    setLines((prev) =>
-      prev.map((l) =>
-        lineKey(l.productId, l.variant) === lineKey(productId, variant)
-          ? { ...l, quantity: Math.max(1, Math.min(quantity, l.stock)) }
-          : l
-      )
-    );
-  }, []);
+  // Ao autenticar, junta o carrinho anónimo (por cookie de sessão) ao do
+  // utilizador e recarrega para refletir o resultado.
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    callApi("/cart/merge", "POST").then((res) => {
+      if (res.success) refresh();
+    });
+  }, [isAuthenticated, refresh]);
 
-  const clearCart = useCallback(() => setLines([]), []);
+  const addItem = useCallback(
+    (line: Omit<CartLine, "quantity">, quantity = 1) => {
+      callApi("/cart/add", "POST", { productId: line.productId, quantidade: quantity, variante: line.variant }).then(
+        (res) => {
+          if (res.success) {
+            refresh();
+            setDrawerOpen(true);
+          }
+        }
+      );
+    },
+    [refresh]
+  );
+
+  const removeItem = useCallback(
+    (productId: string, variant: string) => {
+      const line = lines.find((l) => lineKey(l.productId, l.variant) === lineKey(productId, variant));
+      if (!line) return;
+      callApi(`/cart/${line.cartId}`, "DELETE").then((res) => {
+        if (res.success) refresh();
+      });
+    },
+    [lines, refresh]
+  );
+
+  const updateQuantity = useCallback(
+    (productId: string, variant: string, quantity: number) => {
+      const line = lines.find((l) => lineKey(l.productId, l.variant) === lineKey(productId, variant));
+      if (!line) return;
+      callApi(`/cart/${line.cartId}`, "PUT", { quantidade: quantity }).then((res) => {
+        if (res.success) refresh();
+      });
+    },
+    [lines, refresh]
+  );
+
+  const clearCart = useCallback(() => {
+    callApi("/cart", "DELETE").then((res) => {
+      if (res.success) setLines([]);
+    });
+  }, []);
 
   const subtotal = useMemo(
     () => lines.reduce((sum, l) => sum + l.price * l.quantity, 0),

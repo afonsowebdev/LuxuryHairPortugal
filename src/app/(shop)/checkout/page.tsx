@@ -1,18 +1,31 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 import { useAdminData } from "@/context/AdminDataContext";
+import { useCustomerAuth } from "@/context/CustomerAuthContext";
 import { CheckoutSummary } from "@/components/checkout/CheckoutSummary";
 import { Button } from "@/components/ui/Button";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckIcon, LockIcon, PhoneIcon } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { formatEUR } from "@/lib/format";
-import { generateMultibancoPayment, generateOrderId } from "@/lib/multibanco";
 import { savePendingOrder } from "@/lib/orderStore";
+import type { ApiOrder } from "@/lib/mappers/order";
+import { getCustomerToken } from "@/context/CustomerAuthContext";
 import type { Coupon, Order } from "@/types";
+
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T | null;
+  message: string;
+}
+
+interface CheckoutResponse {
+  order: ApiOrder;
+  payment: { entidade: string; referencia: string; valor: number; expiraEm: string };
+}
 
 interface CustomerForm {
   name: string;
@@ -49,12 +62,47 @@ function validateCoupon(coupon: Coupon, subtotal: number): string | null {
 
 export default function CheckoutPage() {
   const { lines, subtotal, clearCart } = useCart();
-  const { placeOrder, settings: storeSettings, getCouponByCode } = useAdminData();
+  const {
+    settings: storeSettings,
+    getCouponByCode,
+    orders,
+    hydrated: dataHydrated,
+    refreshProducts,
+  } = useAdminData();
+  const { customer, hydrated: authHydrated } = useCustomerAuth();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
   const [form, setForm] = useState<CustomerForm>(emptyForm);
+
+  // Once the customer's account and the order history are both hydrated
+  // from localStorage, pre-fill the form with their account details and
+  // their most recent shipping address, so a returning customer doesn't
+  // have to retype everything. Guests (no session) see the form untouched.
+  useEffect(() => {
+    if (!authHydrated || !dataHydrated || !customer) return;
+    const email = customer.email.toLowerCase();
+    const lastOrder = orders
+      .filter((o) => o.customer.email.toLowerCase() === email)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))[0];
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setForm((f) => ({
+      ...f,
+      name: f.name || customer.name,
+      email: f.email || customer.email,
+      phone: f.phone || lastOrder?.customer.phone || "",
+      address: f.address || lastOrder?.customer.address || "",
+      city: f.city || lastOrder?.customer.city || "",
+      postalCode: f.postalCode || lastOrder?.customer.postalCode || "",
+      country: lastOrder?.customer.country || f.country,
+    }));
+  }, [authHydrated, dataHydrated, customer, orders]);
   const [payment, setPayment] = useState<"Multibanco" | "MB WAY" | "Cartão">("Multibanco");
   const [submitting, setSubmitting] = useState(false);
+  const [mbwayPhone, setMbwayPhone] = useState("");
+  const [mbwayError, setMbwayError] = useState<string | null>(null);
+  const [mbwayPending, setMbwayPending] = useState(false);
+  const [orderError, setOrderError] = useState<string | null>(null);
 
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
@@ -132,46 +180,116 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function handlePlaceOrder() {
-    setSubmitting(true);
-    const orderId = generateOrderId();
-    const mb = generateMultibancoPayment(orderId, total, storeSettings);
-
-    const order: Order = {
-      id: orderId,
-      reference: mb.reference,
-      entity: mb.entity,
-      customer: {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        address: form.address,
-        city: form.city,
-        postalCode: form.postalCode,
-        country: form.country,
+  async function submitOrder(): Promise<{ orderId: string } | { error: string }> {
+    const token = getCustomerToken();
+    const res = await fetch("/api/orders/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      items: lines.map((l) => ({
-        productId: l.productId,
-        name: l.name,
-        image: l.slug,
-        variant: l.variant,
-        quantity: l.quantity,
-        price: l.price,
+      body: JSON.stringify({
+        nomeCliente: form.name,
+        email: form.email,
+        telefone: form.phone,
+        morada: form.address,
+        cidade: form.city,
+        codigoPostal: form.postalCode,
+        pais: form.country,
+        desconto: discount > 0 ? discount : undefined,
+        envio: shipping,
+        metodo: payment === "MB WAY" ? "mbway" : "multibanco",
+      }),
+    });
+    const json = (await res.json()) as ApiEnvelope<CheckoutResponse>;
+    if (!json.success || !json.data) return { error: json.message || "Não foi possível criar a encomenda." };
+
+    const { order: apiOrder, payment: apiPayment } = json.data;
+    const order: Order = {
+      id: apiOrder.id,
+      reference: apiPayment.referencia,
+      entity: apiPayment.entidade,
+      customer: {
+        name: apiOrder.nomeCliente,
+        email: apiOrder.email,
+        phone: apiOrder.telefone,
+        address: apiOrder.morada,
+        city: apiOrder.cidade,
+        postalCode: apiOrder.codigoPostal,
+        country: apiOrder.pais,
+      },
+      items: apiOrder.items.map((i) => ({
+        productId: i.productId,
+        name: i.nomeProduto,
+        image: i.nomeProduto,
+        variant: i.variante || "Padrão",
+        quantity: i.quantidade,
+        price: i.precoUnitario,
       })),
-      subtotal,
-      shipping,
+      subtotal: apiOrder.subtotal,
+      shipping: apiOrder.envio,
       couponCode: appliedCoupon?.code,
-      discount: discount > 0 ? discount : undefined,
-      total,
+      discount: apiOrder.desconto > 0 ? apiOrder.desconto : undefined,
+      total: apiOrder.total,
       status: "A aguardar pagamento",
-      paymentMethod: "Multibanco",
-      createdAt: new Date().toISOString(),
+      paymentMethod: payment,
+      createdAt: apiOrder.createdAt,
     };
 
     savePendingOrder(order);
-    placeOrder(order);
-    clearCart();
-    router.push(`/encomenda-recebida/${orderId}`);
+
+    if (payment === "MB WAY") {
+      await fetch("/api/payment/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id }),
+      });
+      savePendingOrder({ ...order, status: "Pago" });
+    }
+
+    return { orderId: order.id };
+  }
+
+  function handlePlaceOrder() {
+    if (payment === "MB WAY") {
+      const digits = mbwayPhone.replace(/\s/g, "");
+      if (!/^9\d{8}$/.test(digits)) {
+        setMbwayError("Introduza um número de telemóvel válido (9 dígitos).");
+        return;
+      }
+      setMbwayError(null);
+      setSubmitting(true);
+      setMbwayPending(true);
+      // PROTOTYPE ONLY — a real integration calls a payment provider (e.g.
+      // SIBS/Ifthenpay) that pushes the request to the MB WAY app and
+      // notifies the backend via webhook once the customer approves it.
+      window.setTimeout(async () => {
+        const result = await submitOrder();
+        if ("error" in result) {
+          setMbwayPending(false);
+          setSubmitting(false);
+          setOrderError(result.error);
+          return;
+        }
+        clearCart();
+        refreshProducts();
+        router.push(`/encomenda-recebida/${result.orderId}`);
+      }, 2600);
+      return;
+    }
+
+    setOrderError(null);
+    setSubmitting(true);
+    submitOrder().then((result) => {
+      if ("error" in result) {
+        setSubmitting(false);
+        setOrderError(result.error);
+        return;
+      }
+      clearCart();
+      refreshProducts();
+      router.push(`/encomenda-recebida/${result.orderId}`);
+    });
   }
 
   if (lines.length === 0) {
@@ -186,6 +304,33 @@ export default function CheckoutPage() {
         <Button href="/loja" variant="primary" size="lg">
           Ir para a Loja
         </Button>
+      </div>
+    );
+  }
+
+  if (authHydrated && !customer) {
+    return (
+      <div className="mx-auto flex max-w-lg flex-col items-center gap-4 px-6 py-24 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold/10 text-gold">
+          <LockIcon className="h-6 w-6" />
+        </span>
+        <h1 className="font-serif text-2xl font-semibold text-plum-dark">
+          Inicie sessão para continuar
+        </h1>
+        <p className="max-w-sm text-sm text-plum-dark/60">
+          Para finalizar a compra e acompanhar a sua encomenda, é necessário ter sessão iniciada.
+        </p>
+        <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+          <Button href="/conta/entrar?redirect=/checkout" variant="primary" size="lg">
+            Entrar
+          </Button>
+          <Button href="/conta/criar?redirect=/checkout" variant="secondary" size="lg">
+            Criar Conta
+          </Button>
+        </div>
+        <Link href="/carrinho" className="mt-2 text-xs text-plum-dark/50 underline hover:text-gold">
+          ← Voltar ao carrinho
+        </Link>
       </div>
     );
   }
@@ -387,20 +532,85 @@ export default function CheckoutPage() {
                 </p>
               </button>
 
-              {(["MB WAY", "Cartão"] as const).map((method) => (
-                <div
-                  key={method}
-                  className="flex cursor-not-allowed items-center justify-between rounded-2xl border-2 border-plum/10 p-5 opacity-50"
+              <div
+                className={`rounded-2xl border-2 transition-colors ${
+                  payment === "MB WAY" ? "border-gold bg-gold/10" : "border-plum/15"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPayment("MB WAY");
+                    setMbwayError(null);
+                    if (!mbwayPhone) setMbwayPhone(form.phone.replace(/\s/g, ""));
+                  }}
+                  disabled={mbwayPending}
+                  className="flex w-full flex-col gap-2 p-5 text-left cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <span className="font-serif text-lg font-semibold text-plum-dark">{method}</span>
-                  <span className="rounded-full bg-plum-dark/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-plum-dark/60">
-                    Brevemente
-                  </span>
-                </div>
-              ))}
+                  <div className="flex items-center justify-between">
+                    <span className="font-serif text-lg font-semibold text-plum-dark">MB WAY</span>
+                    <span
+                      className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                        payment === "MB WAY" ? "border-gold bg-gold" : "border-plum/30"
+                      }`}
+                    >
+                      {payment === "MB WAY" && <CheckIcon className="h-3 w-3 text-plum-dark" />}
+                    </span>
+                  </div>
+                  <p className="text-sm text-plum-dark/60">
+                    Receberá um pedido de pagamento na app MB WAY para aprovar com o telemóvel.
+                  </p>
+                </button>
+
+                {payment === "MB WAY" && (
+                  <div className="border-t border-plum/10 px-5 pb-5 pt-4">
+                    {mbwayPending ? (
+                      <div className="flex items-center gap-3 text-sm text-plum-dark/70">
+                        <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-gold border-t-transparent" />
+                        A aguardar confirmação na app MB WAY (
+                        {mbwayPhone.replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3")})...
+                      </div>
+                    ) : (
+                      <label className="flex flex-col gap-1.5 text-sm">
+                        <span className="text-xs font-medium text-plum-dark/70">
+                          Número de telemóvel MB WAY
+                        </span>
+                        <div className="relative max-w-xs">
+                          <PhoneIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-plum-dark/40" />
+                          <input
+                            type="tel"
+                            inputMode="numeric"
+                            placeholder="9XX XXX XXX"
+                            maxLength={9}
+                            value={mbwayPhone}
+                            onChange={(e) => setMbwayPhone(e.target.value.replace(/\D/g, "").slice(0, 9))}
+                            className="input pl-11"
+                          />
+                        </div>
+                        {mbwayError && <p className="text-xs text-bordeaux">{mbwayError}</p>}
+                      </label>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div
+                className="flex cursor-not-allowed items-center justify-between rounded-2xl border-2 border-plum/10 p-5 opacity-50"
+              >
+                <span className="font-serif text-lg font-semibold text-plum-dark">Cartão</span>
+                <span className="rounded-full bg-plum-dark/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-plum-dark/60">
+                  Brevemente
+                </span>
+              </div>
+
+              {orderError && (
+                <p role="alert" className="rounded-lg border border-bordeaux/30 bg-bordeaux/10 px-4 py-2.5 text-sm text-bordeaux">
+                  {orderError}
+                </p>
+              )}
 
               <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-                <Button variant="ghost" size="md" onClick={() => setStep(1)}>
+                <Button variant="ghost" size="md" onClick={() => setStep(1)} disabled={mbwayPending}>
                   ← Voltar
                 </Button>
                 <Button
@@ -409,7 +619,11 @@ export default function CheckoutPage() {
                   onClick={handlePlaceOrder}
                   disabled={submitting}
                 >
-                  {submitting ? "A processar..." : `Confirmar Encomenda · ${formatEUR(total)}`}
+                  {mbwayPending
+                    ? "A aguardar aprovação..."
+                    : submitting
+                      ? "A processar..."
+                      : `Confirmar Encomenda · ${formatEUR(total)}`}
                 </Button>
               </div>
               <p className="text-center text-xs text-plum-dark/40">

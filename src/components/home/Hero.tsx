@@ -1,65 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/ui/Logo";
 import { Button } from "@/components/ui/Button";
+import { VideoBackground } from "@/components/ui/VideoBackground";
+import { heroClips } from "@/lib/data/heroClips";
 import { useAdminData } from "@/context/AdminDataContext";
-
-const clips = [
-  { src: "/assets/videos/closeup-frontal.mp4", poster: "/assets/videos/closeup-frontal-poster.png" },
-  { src: "/assets/videos/closeup-toque-suave.mp4", poster: "/assets/videos/closeup-toque-suave-poster.png" },
-  { src: "/assets/videos/closeup-perfil.mp4", poster: "/assets/videos/closeup-perfil-poster.png" },
-  { src: "/assets/videos/closeup-maos-queixo.mp4", poster: "/assets/videos/closeup-maos-queixo-poster.png" },
-  { src: "/assets/videos/closeup-maos-pescoco.mp4", poster: "/assets/videos/closeup-maos-pescoco-poster.png" },
-];
 
 export function Hero() {
   const { settings: storeSettings } = useAdminData();
 
-  // Two permanently-mounted <video> layers crossfade into each other instead
-  // of hard-cutting: the hidden layer's src is swapped and started a beat
-  // before it fades in, so the switch reads as one continuous dissolve.
-  const videoRef0 = useRef<HTMLVideoElement>(null);
-  const videoRef1 = useRef<HTMLVideoElement>(null);
-  const videoRefs = [videoRef0, videoRef1];
-  const [front, setFront] = useState<0 | 1>(0);
-  const nextClip = useRef(1);
-
-  useEffect(() => {
-    const v = videoRef0.current;
-    if (!v) return;
-    v.src = clips[0].src;
-    v.play().catch(() => {});
-  }, []);
-
-  function handleEnded(layer: 0 | 1) {
-    if (layer !== front) return; // the hidden layer finishing doesn't drive anything
-    const back = layer === 0 ? 1 : 0;
-    const backVideo = videoRefs[back].current;
-    if (backVideo) {
-      backVideo.src = clips[nextClip.current].src;
-      backVideo.currentTime = 0;
-      backVideo.play().catch(() => {});
-    }
-    nextClip.current = (nextClip.current + 1) % clips.length;
-    setFront(back);
-  }
-
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-plum-dark">
-      {([0, 1] as const).map((layer) => (
-        <video
-          key={layer}
-          ref={videoRefs[layer]}
-          muted
-          playsInline
-          poster={clips[layer].poster}
-          onEnded={() => handleEnded(layer)}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1400ms] ease-in-out ${
-            front === layer ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
+      <VideoBackground clips={heroClips} />
       <div className="absolute inset-0 bg-gradient-to-b from-plum-dark/60 via-plum-dark/35 to-plum-dark/70" />
       <div
         className="absolute inset-0"

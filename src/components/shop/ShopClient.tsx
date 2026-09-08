@@ -24,7 +24,7 @@ function FilterChip({ label, onRemove }: { label: string; onRemove: () => void }
   return (
     <button
       onClick={onRemove}
-      className="flex items-center gap-1.5 rounded-full bg-plum-dark/8 py-1.5 pl-3 pr-2 text-xs font-medium text-plum-dark hover:bg-plum-dark/15 cursor-pointer"
+      className="flex items-center gap-1.5 border border-plum/15 bg-plum-dark/5 py-1.5 pl-3 pr-2 text-xs font-medium text-plum-dark hover:bg-plum-dark/10 cursor-pointer"
     >
       {label}
       <CloseIcon className="h-3 w-3" />
@@ -218,8 +218,8 @@ export function ShopClient({
       <PageHeader eyebrow={storeSettings.brand.name} title={displayTitle} description={displayDescription} />
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 lg:flex-row">
-          <aside className="hidden w-72 shrink-0 lg:block lg:sticky lg:top-[calc(var(--header-height,6rem)+1rem)] lg:h-fit lg:max-h-[calc(100vh-var(--header-height,6rem)-2rem)] lg:overflow-y-auto lg:self-start">
-            <div className="rounded-2xl border border-plum/10 bg-white p-6 shadow-sm">
+          <aside className="hidden w-72 shrink-0 lg:block lg:sticky lg:top-[calc(var(--header-height,6rem)+1rem)] lg:h-fit lg:self-start">
+            <div className="border-t-2 border-gold bg-white p-6">
               <ShopFilters
                 state={filters}
                 onChange={setFilters}
@@ -237,7 +237,7 @@ export function ShopClient({
           </aside>
 
           <div className="flex-1">
-            <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-plum/10 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-8 flex flex-col gap-4 border border-plum/10 bg-white p-5 sm:p-6">
               <div className="relative">
                 <SearchIcon className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-plum-dark/40" />
                 <input
@@ -246,7 +246,7 @@ export function ShopClient({
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="Pesquisar produtos..."
                   aria-label="Pesquisar produtos"
-                  className="w-full rounded-full border border-plum/15 bg-cream/60 py-2.5 pl-11 pr-4 text-sm text-plum-dark outline-none focus:border-gold focus:bg-white"
+                  className="w-full border border-plum/15 bg-cream/60 py-2.5 pl-11 pr-4 text-sm text-plum-dark outline-none focus:border-gold focus:bg-white"
                 />
               </div>
 
@@ -268,12 +268,12 @@ export function ShopClient({
               <div className="flex items-center justify-between gap-3 border-t border-plum/10 pt-4">
                 <button
                   onClick={() => setMobileFiltersOpen(true)}
-                  className="relative flex items-center gap-2 rounded-full border border-plum/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-plum-dark lg:hidden cursor-pointer"
+                  className="relative flex items-center gap-2 border border-plum/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-plum-dark lg:hidden cursor-pointer"
                 >
                   <FilterIcon className="h-4 w-4" />
                   Filtros
                   {activeChips.length > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-plum-dark">
+                    <span className="flex h-4 min-w-4 items-center justify-center bg-gold px-1 text-[10px] font-bold text-plum-dark">
                       {activeChips.length}
                     </span>
                   )}
@@ -286,7 +286,7 @@ export function ShopClient({
                   value={sort}
                   onChange={(e) => setSort(e.target.value as SortOption)}
                   wrapperClassName="ml-auto"
-                  className="rounded-full border border-plum/20 bg-cream pl-4 py-2 text-xs font-medium text-plum-dark outline-none focus:border-gold"
+                  className="border border-plum/20 bg-cream pl-4 py-2 text-xs font-medium text-plum-dark outline-none focus:border-gold"
                   aria-label="Ordenar por"
                 >
                   {sortOptions.map((o) => (
@@ -301,12 +301,12 @@ export function ShopClient({
             {!hydrated ? (
               <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="aspect-[4/5] animate-pulse rounded-lg bg-plum-dark/5" />
+                  <div key={i} className="aspect-[4/5] animate-pulse bg-plum-dark/5" />
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 rounded-2xl border border-plum/10 bg-white px-6 py-20 text-center shadow-sm">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-gold">
+              <div className="flex flex-col items-center gap-4 border border-plum/10 bg-white px-6 py-20 text-center">
+                <span className="flex h-16 w-16 items-center justify-center bg-gold/10 text-gold">
                   <PackageSearchIcon className="h-7 w-7" />
                 </span>
                 <div className="space-y-1.5">
@@ -319,8 +319,8 @@ export function ShopClient({
                 </div>
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center gap-4 rounded-2xl border border-plum/10 bg-white px-6 py-20 text-center shadow-sm">
-                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold/10 text-gold">
+              <div className="flex flex-col items-center gap-4 border border-plum/10 bg-white px-6 py-20 text-center">
+                <span className="flex h-16 w-16 items-center justify-center bg-gold/10 text-gold">
                   <SearchIcon className="h-7 w-7" />
                 </span>
                 <div className="space-y-1.5">
@@ -333,7 +333,7 @@ export function ShopClient({
                 </div>
                 <button
                   onClick={resetFilters}
-                  className="rounded-full border border-bordeaux/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-bordeaux hover:bg-bordeaux/5 cursor-pointer"
+                  className="border border-bordeaux/30 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-bordeaux hover:bg-bordeaux/5 cursor-pointer"
                 >
                   Limpar filtros e pesquisa
                 </button>
@@ -382,7 +382,7 @@ export function ShopClient({
               />
               <button
                 onClick={() => setMobileFiltersOpen(false)}
-                className="mt-6 w-full rounded-full bg-gold py-3 text-xs font-semibold uppercase tracking-[0.16em] text-plum-dark cursor-pointer"
+                className="mt-6 w-full bg-gold py-3 text-xs font-semibold uppercase tracking-[0.16em] text-plum-dark cursor-pointer"
               >
                 Ver {filtered.length} produtos
               </button>
