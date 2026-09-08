@@ -27,8 +27,8 @@ function CategoryCard({ category }: { category: Category }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl bg-white p-6 ring-1 ring-plum/10 sm:flex-row">
-      <div className="relative h-32 w-full shrink-0 overflow-hidden rounded-xl sm:h-auto sm:w-40">
+    <div className="flex flex-col gap-4 bg-white p-6 ring-1 ring-plum/10 sm:flex-row">
+      <div className="relative h-32 w-full shrink-0 overflow-hidden sm:h-auto sm:w-40">
         <ProductImage
           seed={category.slug}
           category={category.slug}

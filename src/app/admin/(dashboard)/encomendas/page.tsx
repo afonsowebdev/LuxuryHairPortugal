@@ -96,12 +96,12 @@ export default function AdminOrdersPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Pesquisar nº, cliente ou email..."
-            className="w-full rounded-xl border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
+            className="w-full border border-plum/15 bg-white py-2.5 pl-9 pr-4 text-sm outline-none focus:border-gold"
           />
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-plum/10">
+      <div className="overflow-x-auto bg-white ring-1 ring-plum/10">
         <table className="w-full min-w-[720px] text-left text-sm">
           <thead>
             <tr className="border-b border-plum/10 text-xs uppercase tracking-wide text-plum-dark/50">

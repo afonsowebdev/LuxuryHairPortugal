@@ -24,14 +24,14 @@ export function CheckoutSummary({
   const total = subtotal + shipping - discount;
 
   return (
-    <div className="flex flex-col gap-5 rounded-2xl bg-plum-dark/5 p-6">
+    <div className="flex flex-col gap-5 bg-plum-dark/5 p-6">
       <h2 className="font-serif text-lg font-semibold text-plum-dark">Resumo do Pedido</h2>
       <div className="flex max-h-72 flex-col gap-4 overflow-y-auto pr-1">
         {lines.map((line) => {
           const product = getProductBySlug(line.slug);
           return (
             <div key={`${line.productId}-${line.variant}`} className="flex gap-3">
-              <div className="relative h-16 w-14 shrink-0 overflow-hidden rounded-lg">
+              <div className="relative h-16 w-14 shrink-0 overflow-hidden">
                 <ProductImage
                   seed={line.slug}
                   category={product?.category}

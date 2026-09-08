@@ -100,7 +100,7 @@ export default function OrderReceivedPage({
         <OrderStatusBadge status={order.status} />
       </div>
 
-      <div className="mb-8 rounded-2xl bg-plum-dark/5 p-6">
+      <div className="mb-8 bg-plum-dark/5 p-6">
         <OrderTracker status={order.status} />
       </div>
 
@@ -109,7 +109,7 @@ export default function OrderReceivedPage({
       )}
 
       {order.paymentMethod === "MB WAY" && order.status === "Pago" && (
-        <div className="flex items-center gap-3 rounded-2xl bg-plum-dark/5 p-6">
+        <div className="flex items-center gap-3 bg-plum-dark/5 p-6">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/15 text-gold">
             <CheckIcon className="h-5 w-5" />
           </span>
@@ -119,7 +119,7 @@ export default function OrderReceivedPage({
         </div>
       )}
 
-      <div className="mt-8 flex flex-col gap-4 rounded-2xl bg-plum-dark/5 p-6">
+      <div className="mt-8 flex flex-col gap-4 bg-plum-dark/5 p-6">
         <h2 className="font-serif text-lg font-semibold text-plum-dark">Detalhes da Encomenda</h2>
         <div className="divide-y divide-plum/10">
           {order.items.map((item) => (

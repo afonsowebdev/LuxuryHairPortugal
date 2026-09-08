@@ -41,7 +41,7 @@ export function InstagramCTA() {
                 href={storeSettings.brand.instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group relative aspect-square overflow-hidden rounded-2xl shadow-lg shadow-black/20 ${
+                className={`group relative aspect-square overflow-hidden shadow-lg shadow-black/20 ${
                   i % 2 === 1 ? "sm:translate-y-6" : ""
                 }`}
               >

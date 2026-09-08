@@ -23,7 +23,7 @@ export function ProductGallery({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-plum-dark/5">
+      <div className="relative aspect-[4/5] overflow-hidden bg-plum-dark/5">
         <ProductImage
           seed={slug}
           category={category}
@@ -43,7 +43,7 @@ export function ProductGallery({
               key={label}
               onClick={() => setActive(i)}
               aria-label={label}
-              className={`relative aspect-square w-20 shrink-0 overflow-hidden rounded-xl ring-2 transition-all cursor-pointer ${
+              className={`relative aspect-square w-20 shrink-0 overflow-hidden ring-2 transition-all cursor-pointer ${
                 active === i ? "ring-gold" : "ring-transparent opacity-70 hover:opacity-100"
               }`}
             >

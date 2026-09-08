@@ -49,13 +49,13 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
         <OrderStatusBadge status={order.status} />
       </div>
 
-      <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+      <div className="bg-white p-6 ring-1 ring-plum/10">
         <OrderTracker status={order.status} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col gap-6 lg:col-span-2">
-          <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+          <div className="bg-white p-6 ring-1 ring-plum/10">
             <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">
               Itens da Encomenda
             </h2>
@@ -88,7 +88,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+          <div className="bg-white p-6 ring-1 ring-plum/10">
             <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">
               Dados de Pagamento Multibanco
             </h2>
@@ -110,7 +110,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         <div className="flex flex-col gap-6">
-          <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+          <div className="bg-white p-6 ring-1 ring-plum/10">
             <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">Cliente</h2>
             <div className="flex flex-col gap-1 text-sm text-plum-dark/70">
               <p className="font-medium text-plum-dark">{order.customer.name}</p>
@@ -124,7 +124,7 @@ export default function AdminOrderDetailPage({ params }: { params: Promise<{ id:
             </div>
           </div>
 
-          <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
+          <div className="bg-white p-6 ring-1 ring-plum/10">
             <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">
               Atualizar Estado
             </h2>

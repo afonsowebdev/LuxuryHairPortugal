@@ -63,12 +63,12 @@ export default function AdminMessagesPage() {
       {tab === "contactos" ? (
         <div className="flex flex-col gap-3">
           {messages.length === 0 && (
-            <div className="rounded-2xl bg-white p-10 text-center text-sm text-plum-dark/50 ring-1 ring-plum/10">
+            <div className="bg-white p-10 text-center text-sm text-plum-dark/50 ring-1 ring-plum/10">
               Ainda não há mensagens de contacto.
             </div>
           )}
           {messages.map((m) => (
-            <div key={m.id} className="rounded-2xl bg-white ring-1 ring-plum/10">
+            <div key={m.id} className="bg-white ring-1 ring-plum/10">
               <button
                 onClick={() => handleOpen(m.id)}
                 className="flex w-full items-center gap-4 px-5 py-4 text-left cursor-pointer"
@@ -116,7 +116,7 @@ export default function AdminMessagesPage() {
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-white ring-1 ring-plum/10">
+        <div className="overflow-x-auto bg-white ring-1 ring-plum/10">
           <table className="w-full min-w-[420px] text-left text-sm">
             <thead>
               <tr className="border-b border-plum/10 text-xs uppercase tracking-wide text-plum-dark/50">

@@ -21,7 +21,7 @@ export function CategoryGrid() {
             <Link
               key={category.slug}
               href={`/loja/${category.slug}`}
-              className={`group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-2xl shadow-md shadow-plum/10 ring-1 ring-plum/5 animate-fade-in-up lg:aspect-auto lg:h-[440px] ${
+              className={`group relative flex aspect-[3/4] flex-col justify-end overflow-hidden shadow-md shadow-plum/10 ring-1 ring-plum/5 animate-fade-in-up lg:aspect-auto lg:h-[440px] ${
                 i === 0 ? "lg:col-span-2" : ""
               }`}
               style={{ animationDelay: `${i * 100}ms` }}

@@ -19,7 +19,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl bg-cream/60 px-4 py-3">
+    <div className="flex items-center justify-between gap-3 bg-cream/60 px-4 py-3">
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-plum-dark/50">
           {label}
@@ -49,7 +49,7 @@ export function MultibancoDetails({
 }) {
   const { settings: storeSettings } = useAdminData();
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border-2 border-gold/40 bg-gold/10 p-6">
+    <div className="flex flex-col gap-3 border-2 border-gold/40 bg-gold/10 p-6">
       <h3 className="font-serif text-lg font-semibold text-plum-dark">Dados para Pagamento</h3>
       <CopyField label="Entidade" value={entity} />
       <CopyField label="Referência" value={reference} />
