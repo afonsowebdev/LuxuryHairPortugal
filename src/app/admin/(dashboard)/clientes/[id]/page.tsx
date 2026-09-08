@@ -40,7 +40,7 @@ export default function AdminCustomerDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className="bg-white p-5 ring-1 ring-plum/10">
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-plum/10">
           <p className="text-xs font-semibold uppercase tracking-wide text-plum-dark/40">
             Total Gasto
           </p>
@@ -48,7 +48,7 @@ export default function AdminCustomerDetailPage({ params }: { params: Promise<{ 
             {formatEUR(customer.totalSpent)}
           </p>
         </div>
-        <div className="bg-white p-5 ring-1 ring-plum/10">
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-plum/10">
           <p className="text-xs font-semibold uppercase tracking-wide text-plum-dark/40">
             Encomendas
           </p>
@@ -56,7 +56,7 @@ export default function AdminCustomerDetailPage({ params }: { params: Promise<{ 
             {customer.ordersCount}
           </p>
         </div>
-        <div className="bg-white p-5 ring-1 ring-plum/10">
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-plum/10">
           <p className="text-xs font-semibold uppercase tracking-wide text-plum-dark/40">
             Valor Médio
           </p>
@@ -64,7 +64,7 @@ export default function AdminCustomerDetailPage({ params }: { params: Promise<{ 
             {formatEUR(customer.ordersCount ? customer.totalSpent / customer.ordersCount : 0)}
           </p>
         </div>
-        <div className="bg-white p-5 ring-1 ring-plum/10">
+        <div className="rounded-2xl bg-white p-5 ring-1 ring-plum/10">
           <p className="text-xs font-semibold uppercase tracking-wide text-plum-dark/40">
             Localização
           </p>
@@ -75,7 +75,7 @@ export default function AdminCustomerDetailPage({ params }: { params: Promise<{ 
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="bg-white p-6 ring-1 ring-plum/10 lg:col-span-2">
+        <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10 lg:col-span-2">
           <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">
             Histórico de Encomendas
           </h2>
@@ -103,7 +103,7 @@ export default function AdminCustomerDetailPage({ params }: { params: Promise<{ 
           )}
         </div>
 
-        <div className="bg-white p-6 ring-1 ring-plum/10">
+        <div className="rounded-2xl bg-white p-6 ring-1 ring-plum/10">
           <h2 className="mb-4 font-serif text-lg font-semibold text-plum-dark">Contacto</h2>
           <div className="flex flex-col gap-2 text-sm text-plum-dark/70">
             <a href={`mailto:${customer.email}`} className="hover:text-bordeaux">

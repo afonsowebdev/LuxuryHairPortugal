@@ -11,7 +11,7 @@ export function MetricCard({
 }) {
   return (
     <div
-      className={`flex flex-col gap-1.5 p-5 ring-1 ${
+      className={`flex flex-col gap-1.5 rounded-2xl p-5 ring-1 ${
         accent ? "bg-plum-dark text-cream ring-gold/20" : "bg-white ring-plum/10"
       }`}
     >

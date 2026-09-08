@@ -6,7 +6,7 @@ const steps: OrderStatus[] = ["A aguardar pagamento", "Pago", "Enviado", "Conclu
 export function OrderTracker({ status }: { status: OrderStatus }) {
   if (status === "Cancelado") {
     return (
-      <div className="border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700">
+      <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-center text-sm font-medium text-red-700">
         Esta encomenda foi cancelada.
       </div>
     );

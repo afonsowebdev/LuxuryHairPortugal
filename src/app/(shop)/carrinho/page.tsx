@@ -54,7 +54,7 @@ export default function CartPage() {
                 <Link
                   key={c.slug}
                   href={`/loja/${c.slug}`}
-                  className="group flex items-center justify-between border border-plum/10 bg-white px-4 py-3 text-sm font-medium text-plum-dark shadow-sm transition-colors hover:border-gold hover:bg-gold/5"
+                  className="group flex items-center justify-between rounded-xl border border-plum/10 bg-white px-4 py-3 text-sm font-medium text-plum-dark shadow-sm transition-colors hover:border-gold hover:bg-gold/5"
                 >
                   {c.name}
                   <ArrowRightIcon className="h-4 w-4 text-plum-dark/30 transition-transform group-hover:translate-x-1 group-hover:text-gold" />
@@ -89,11 +89,11 @@ export default function CartPage() {
             return (
               <div
                 key={`${line.productId}-${line.variant}`}
-                className="flex gap-4 border border-plum/10 bg-white p-4 shadow-sm sm:p-5"
+                className="flex gap-4 rounded-2xl border border-plum/10 bg-white p-4 shadow-sm sm:p-5"
               >
                 <Link
                   href={`/loja/${line.slug}`}
-                  className="relative h-28 w-24 shrink-0 overflow-hidden bg-plum-dark/5"
+                  className="relative h-28 w-24 shrink-0 overflow-hidden rounded-xl bg-plum-dark/5"
                 >
                   <ProductImage
                     seed={line.slug}
@@ -114,7 +114,7 @@ export default function CartPage() {
                       </Link>
                       <p className="mt-1 text-xs text-plum-dark/50">{line.variant}</p>
                       {unitSavings > 0 && (
-                        <span className="mt-1.5 inline-flex w-fit items-center bg-gold/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-dark">
+                        <span className="mt-1.5 inline-flex w-fit items-center rounded-full bg-gold/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-gold-dark">
                           Poupa {formatEUR(unitSavings * line.quantity)}
                         </span>
                       )}
@@ -131,7 +131,7 @@ export default function CartPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="inline-flex items-center border border-plum/15">
+                    <div className="inline-flex items-center rounded-full border border-plum/15">
                       <button
                         onClick={() => updateQuantity(line.productId, line.variant, line.quantity - 1)}
                         className="flex h-8 w-8 items-center justify-center text-plum-dark transition-colors hover:bg-plum-dark/5 disabled:opacity-30 cursor-pointer"
@@ -168,7 +168,7 @@ export default function CartPage() {
         </div>
 
         <aside className="w-full shrink-0 lg:w-80">
-          <div className="sticky top-[calc(var(--header-height,6rem)+1rem)] flex flex-col gap-5 border border-plum/10 bg-white p-6 shadow-sm">
+          <div className="sticky top-[calc(var(--header-height,6rem)+1rem)] flex flex-col gap-5 rounded-2xl border border-plum/10 bg-white p-6 shadow-sm">
             <h2 className="font-serif text-lg font-semibold text-plum-dark">Resumo do Pedido</h2>
 
             {shipping > 0 ? (
@@ -177,15 +177,15 @@ export default function CartPage() {
                   Faltam <span className="font-semibold text-bordeaux">{formatEUR(remainingForFreeShipping)}</span> para
                   envio grátis
                 </p>
-                <div className="h-1.5 w-full overflow-hidden bg-plum-dark/10">
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-plum-dark/10">
                   <div
-                    className="h-full bg-gradient-to-r from-gold to-gold-dark transition-all duration-500"
+                    className="h-full rounded-full bg-gradient-to-r from-gold to-gold-dark transition-all duration-500"
                     style={{ width: `${freeShippingProgress}%` }}
                   />
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 bg-gold/10 px-3 py-2 text-xs font-semibold text-gold-dark">
+              <div className="flex items-center gap-2 rounded-xl bg-gold/10 px-3 py-2 text-xs font-semibold text-gold-dark">
                 <TruckIcon className="h-4 w-4" />
                 Parabéns, tem envio grátis!
               </div>

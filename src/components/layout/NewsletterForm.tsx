@@ -43,7 +43,7 @@ export function NewsletterForm({ variant = "dark" }: { variant?: "dark" | "light
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="O seu email"
-          className={`w-full border py-2.5 pl-11 pr-4 text-sm outline-none focus:border-gold ${
+          className={`w-full rounded-full border py-2.5 pl-11 pr-4 text-sm outline-none focus:border-gold ${
             variant === "light"
               ? "border-plum/20 bg-white text-plum-dark placeholder:text-plum-dark/40"
               : "border-cream/20 bg-transparent text-cream placeholder:text-cream/40"

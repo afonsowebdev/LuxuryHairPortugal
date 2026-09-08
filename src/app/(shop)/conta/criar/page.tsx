@@ -66,7 +66,7 @@ export default function CustomerRegisterPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 border border-cream/15 bg-plum-dark/15 p-6 shadow-2xl backdrop-blur-md sm:p-8"
+          className="flex flex-col gap-4 rounded-lg border border-cream/15 bg-plum-dark/15 p-6 shadow-2xl backdrop-blur-md sm:p-8"
         >
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <AuthField
@@ -113,7 +113,7 @@ export default function CustomerRegisterPage() {
           />
 
           {error && (
-            <p role="alert" className="border border-bordeaux/30 bg-bordeaux/20 px-3 py-2 text-xs font-medium text-cream">
+            <p role="alert" className="rounded-lg border border-bordeaux/30 bg-bordeaux/20 px-3 py-2 text-xs font-medium text-cream">
               {error}
             </p>
           )}

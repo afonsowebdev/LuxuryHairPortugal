@@ -11,7 +11,7 @@ const styles: Record<OrderStatus, string> = {
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 text-xs font-semibold ${styles[status]}`}
+      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${styles[status]}`}
     >
       {status}
     </span>

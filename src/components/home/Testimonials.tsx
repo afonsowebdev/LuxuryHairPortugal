@@ -40,7 +40,7 @@ export function Testimonials() {
           <StarRating
             rating={averageRating}
             count={testimonials.length}
-            className="bg-white px-4 py-2 shadow-sm ring-1 ring-plum/10"
+            className="rounded-full bg-white px-4 py-2 shadow-sm ring-1 ring-plum/10"
           />
         </div>
 
@@ -77,7 +77,7 @@ export function Testimonials() {
               <figure
                 key={t.id}
                 data-testimonial-card
-                className="flex w-[82%] shrink-0 snap-center flex-col gap-4 border border-plum/10 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:w-[320px]"
+                className="flex w-[82%] shrink-0 snap-center flex-col gap-4 rounded-2xl border border-plum/10 bg-white p-6 shadow-sm transition-shadow hover:shadow-md sm:w-[320px]"
               >
                 <QuoteMark />
                 <StarRating rating={t.rating} />

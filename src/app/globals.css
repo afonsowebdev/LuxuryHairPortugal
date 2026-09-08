@@ -111,6 +111,7 @@ textarea:focus-visible,
 }
 
 .input {
+  border-radius: 0.75rem;
   border: 1px solid rgba(74, 30, 60, 0.18);
   background: transparent;
   padding: 0.65rem 1rem;

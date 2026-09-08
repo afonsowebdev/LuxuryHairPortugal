@@ -20,7 +20,7 @@ export default function AboutPage() {
       />
       <Container className="grid grid-cols-1 gap-12 py-16 lg:grid-cols-2 lg:items-center">
         <div className="grid grid-cols-2 gap-4">
-          <div className="relative col-span-2 aspect-[16/10] overflow-hidden">
+          <div className="relative col-span-2 aspect-[16/10] overflow-hidden rounded-2xl">
             <Image
               src="/assets/modelos/lifestyle-sacos-luxury-hair.jpg"
               alt="Duas clientes com sacos de compras Luxury Hair Portugal"
@@ -30,7 +30,7 @@ export default function AboutPage() {
               style={{ objectPosition: getImageFocus("/assets/modelos/lifestyle-sacos-luxury-hair.jpg") }}
             />
           </div>
-          <div className="relative aspect-[3/4] overflow-hidden">
+          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
             <Image
               src="/assets/modelos/retrato-pestanas-fundo-bordeaux-01.jpg"
               alt="Retrato de modelo Luxury Hair Portugal"
@@ -40,7 +40,7 @@ export default function AboutPage() {
               style={{ objectPosition: getImageFocus("/assets/modelos/retrato-pestanas-fundo-bordeaux-01.jpg") }}
             />
           </div>
-          <div className="relative aspect-[3/4] overflow-hidden">
+          <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
             <Image
               src="/assets/modelos/modelo-aplicacao-pestanas.jpg"
               alt="Modelo a aplicar pestanas Luxury Hair Portugal"
