@@ -20,40 +20,21 @@ import type {
   NewsletterSubscriber,
 } from "@/types";
 import { categories as seedCategories } from "@/lib/data/categories";
-import { coupons as seedCoupons } from "@/lib/data/coupons";
-import { contactMessages as seedMessages, newsletterSubscribers as seedSubscribers } from "@/lib/data/messages";
 import { defaultStoreSettings, type StoreSettings } from "@/lib/data/settings";
 import { mapApiProduct, buildProductPayload, type ApiProduct } from "@/lib/mappers/product";
 import { mapApiOrder, type ApiOrder } from "@/lib/mappers/order";
 import { mapApiCustomer, type ApiCustomer } from "@/lib/mappers/customer";
+import { mapApiCategory, type ApiCategory } from "@/lib/mappers/category";
+import { mapApiCoupon, buildCouponPayload, type ApiCoupon } from "@/lib/mappers/coupon";
+import { mapApiMessage, mapApiSubscriber, type ApiContactMessage, type ApiNewsletterSubscriber } from "@/lib/mappers/message";
 import { getAdminToken, useAdminAuth } from "@/context/AdminAuthContext";
 
 /**
- * Produtos, encomendas e clientes já vivem na base de dados real e chegam
- * via /api/products + /api/admin/*. Categorias, cupões, mensagens,
- * newsletter e definições ainda vivem em localStorage — ver "Loja primeiro"
- * no README para o que falta migrar.
+ * Toda a loja (catálogo, encomendas, clientes, categorias, cupões,
+ * mensagens, newsletter e definições) já vive na base de dados real, via
+ * /api/* (leitura pública) e /api/admin/* (gestão, autenticada por token de
+ * admin).
  */
-const KEYS = {
-  categories: "lhp_admin_categories_v1",
-  coupons: "lhp_admin_coupons_v1",
-  messages: "lhp_admin_messages_v1",
-  subscribers: "lhp_admin_subscribers_v1",
-  settings: "lhp_admin_settings_v2",
-};
-
-function loadOrSeed<T>(key: string, seed: T): T {
-  if (typeof window === "undefined") return seed;
-  try {
-    const raw = window.localStorage.getItem(key);
-    if (raw) return JSON.parse(raw) as T;
-  } catch {
-    // ignore corrupted storage
-  }
-  window.localStorage.setItem(key, JSON.stringify(seed));
-  return seed;
-}
-
 interface ApiEnvelope<T> {
   success: boolean;
   data: T | null;
@@ -82,6 +63,27 @@ async function fetchCategoryIdBySlug(): Promise<Record<string, string>> {
   }
 }
 
+async function fetchStoreCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch("/api/categories");
+    const json = (await res.json()) as ApiEnvelope<ApiCategory[]>;
+    if (!json.success || !json.data) return [];
+    return json.data.map(mapApiCategory);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchStoreSettings(): Promise<StoreSettings | null> {
+  try {
+    const res = await fetch("/api/settings");
+    const json = (await res.json()) as ApiEnvelope<StoreSettings>;
+    return json.success && json.data ? json.data : null;
+  } catch {
+    return null;
+  }
+}
+
 const ORDER_STATUS_TO_ESTADO: Record<OrderStatus, string> = {
   "A aguardar pagamento": "PENDENTE",
   Pago: "PAGO",
@@ -100,6 +102,24 @@ async function fetchAdminCustomers(): Promise<Customer[]> {
   const res = await callAdminApi<ApiCustomer[]>("/admin/users", "GET");
   if (!res.success || !res.data) return [];
   return res.data.map(mapApiCustomer);
+}
+
+async function fetchAdminCoupons(): Promise<Coupon[]> {
+  const res = await callAdminApi<ApiCoupon[]>("/admin/coupons", "GET");
+  if (!res.success || !res.data) return [];
+  return res.data.map(mapApiCoupon);
+}
+
+async function fetchAdminMessages(): Promise<ContactMessage[]> {
+  const res = await callAdminApi<ApiContactMessage[]>("/admin/messages", "GET");
+  if (!res.success || !res.data) return [];
+  return res.data.map(mapApiMessage);
+}
+
+async function fetchAdminSubscribers(): Promise<NewsletterSubscriber[]> {
+  const res = await callAdminApi<ApiNewsletterSubscriber[]>("/admin/newsletter", "GET");
+  if (!res.success || !res.data) return [];
+  return res.data.map(mapApiSubscriber);
 }
 
 async function callAdminApi<T>(endpoint: string, method: string, body?: unknown) {
@@ -138,7 +158,6 @@ interface AdminDataContextValue {
   addCoupon: (coupon: Coupon) => void;
   updateCoupon: (id: string, patch: Partial<Coupon>) => void;
   deleteCoupon: (id: string) => void;
-  getCouponByCode: (code: string) => Coupon | undefined;
 
   markMessageRead: (id: string) => void;
   deleteMessage: (id: string) => void;
@@ -162,60 +181,50 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [categories, setCategories] = useState<Category[]>(seedCategories);
-  const [coupons, setCoupons] = useState<Coupon[]>(seedCoupons);
-  const [messages, setMessages] = useState<ContactMessage[]>(seedMessages);
-  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>(seedSubscribers);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [subscribers, setSubscribers] = useState<NewsletterSubscriber[]>([]);
   const [settings, setSettings] = useState<StoreSettings>(defaultStoreSettings);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    // localStorage is unavailable during SSR, so admin data can only be
-    // hydrated client-side after mount.
-    /* eslint-disable react-hooks/set-state-in-effect */
-    setCategories(loadOrSeed(KEYS.categories, seedCategories));
-    setCoupons(loadOrSeed(KEYS.coupons, seedCoupons));
-    setMessages(loadOrSeed(KEYS.messages, seedMessages));
-    setSubscribers(loadOrSeed(KEYS.subscribers, seedSubscribers));
-    setSettings(loadOrSeed(KEYS.settings, defaultStoreSettings));
-    /* eslint-enable react-hooks/set-state-in-effect */
-
-    Promise.all([fetchStoreProducts(), fetchCategoryIdBySlug()]).then(([apiProducts, idBySlug]) => {
-      setProducts(apiProducts);
-      setCategoryIdBySlug(idBySlug);
-      setHydrated(true);
-    });
+    Promise.all([fetchStoreProducts(), fetchCategoryIdBySlug(), fetchStoreCategories(), fetchStoreSettings()]).then(
+      ([apiProducts, idBySlug, apiCategories, apiSettings]) => {
+        setProducts(apiProducts);
+        setCategoryIdBySlug(idBySlug);
+        if (apiCategories.length) setCategories(apiCategories);
+        if (apiSettings) setSettings(apiSettings);
+        setHydrated(true);
+      }
+    );
   }, []);
 
-  // Encomendas e clientes são geridos no admin — só há um token para os
-  // pedir quando a sessão de admin está autenticada.
+  // Encomendas, clientes, cupões e mensagens são geridos no admin — só há
+  // um token para os pedir quando a sessão de admin está autenticada.
   useEffect(() => {
     if (!isAdminAuthenticated) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setOrders([]);
       setCustomers([]);
+      setCoupons([]);
+      setMessages([]);
+      setSubscribers([]);
       return;
     }
-    Promise.all([fetchAdminOrders(), fetchAdminCustomers()]).then(([apiOrders, apiCustomers]) => {
+    Promise.all([
+      fetchAdminOrders(),
+      fetchAdminCustomers(),
+      fetchAdminCoupons(),
+      fetchAdminMessages(),
+      fetchAdminSubscribers(),
+    ]).then(([apiOrders, apiCustomers, apiCoupons, apiMessages, apiSubscribers]) => {
       setOrders(apiOrders);
       setCustomers(apiCustomers);
+      setCoupons(apiCoupons);
+      setMessages(apiMessages);
+      setSubscribers(apiSubscribers);
     });
   }, [isAdminAuthenticated]);
-
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.categories, JSON.stringify(categories));
-  }, [categories, hydrated]);
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.coupons, JSON.stringify(coupons));
-  }, [coupons, hydrated]);
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.messages, JSON.stringify(messages));
-  }, [messages, hydrated]);
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.subscribers, JSON.stringify(subscribers));
-  }, [subscribers, hydrated]);
-  useEffect(() => {
-    if (hydrated) window.localStorage.setItem(KEYS.settings, JSON.stringify(settings));
-  }, [settings, hydrated]);
 
   function addProduct(product: Product) {
     const categoriaId = categoryIdBySlug[product.category];
@@ -280,56 +289,83 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
 
   function updateCategory(slug: CategorySlug, patch: Partial<Category>) {
     setCategories((prev) => prev.map((c) => (c.slug === slug ? { ...c, ...patch } : c)));
+    callAdminApi<ApiCategory>("/categories", "PUT", {
+      slug,
+      ...(patch.name !== undefined ? { nome: patch.name } : {}),
+      ...(patch.description !== undefined ? { descricao: patch.description } : {}),
+      ...(patch.photo !== undefined ? { imagem: patch.photo || null } : {}),
+    }).then((res) => {
+      if (!res.success) console.error("updateCategory:", res.message);
+    });
   }
 
   function addCoupon(coupon: Coupon) {
-    setCoupons((prev) => [coupon, ...prev]);
+    callAdminApi<ApiCoupon>("/admin/coupons", "POST", buildCouponPayload(coupon)).then((res) => {
+      if (res.success && res.data) {
+        setCoupons((prev) => [mapApiCoupon(res.data as ApiCoupon), ...prev]);
+      } else {
+        console.error("addCoupon:", res.message);
+      }
+    });
   }
 
   function updateCoupon(id: string, patch: Partial<Coupon>) {
     setCoupons((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    callAdminApi<ApiCoupon>("/admin/coupons", "PUT", { id, ...buildCouponPayload(patch) }).then((res) => {
+      if (!res.success) console.error("updateCoupon:", res.message);
+    });
   }
 
   function deleteCoupon(id: string) {
     setCoupons((prev) => prev.filter((c) => c.id !== id));
+    callAdminApi("/admin/coupons", "DELETE", { id }).then((res) => {
+      if (!res.success) console.error("deleteCoupon:", res.message);
+    });
   }
-
-  const getCouponByCode = useCallback(
-    (code: string) => coupons.find((c) => c.code.toUpperCase() === code.trim().toUpperCase()),
-    [coupons]
-  );
 
   function markMessageRead(id: string) {
     setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, read: true } : m)));
+    callAdminApi("/admin/messages", "PUT", { id }).then((res) => {
+      if (!res.success) console.error("markMessageRead:", res.message);
+    });
   }
 
   function deleteMessage(id: string) {
     setMessages((prev) => prev.filter((m) => m.id !== id));
+    callAdminApi("/admin/messages", "DELETE", { id }).then((res) => {
+      if (!res.success) console.error("deleteMessage:", res.message);
+    });
   }
 
   function addContactMessage(message: Omit<ContactMessage, "id" | "createdAt" | "read">) {
-    const newMessage: ContactMessage = {
-      ...message,
-      id: `msg-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      read: false,
-    };
-    setMessages((prev) => [newMessage, ...prev]);
+    fetch("/api/contact", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nome: message.name,
+        email: message.email,
+        assunto: message.subject,
+        mensagem: message.message,
+      }),
+    }).catch((error) => console.error("addContactMessage:", error));
   }
 
   function addNewsletterSubscriber(email: string): boolean {
-    const normalized = email.trim().toLowerCase();
-    let added = false;
-    setSubscribers((prev) => {
-      if (prev.some((s) => s.email.toLowerCase() === normalized)) return prev;
-      added = true;
-      return [{ id: `sub-${Date.now()}`, email: email.trim(), createdAt: new Date().toISOString() }, ...prev];
-    });
-    return added;
+    fetch("/api/newsletter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    }).catch((error) => console.error("addNewsletterSubscriber:", error));
+    // A resposta chega de forma assíncrona; o formulário assume sucesso
+    // otimista e mostra sempre a mesma confirmação por questões de UX.
+    return true;
   }
 
   function updateSettings(next: StoreSettings) {
     setSettings(next);
+    callAdminApi<StoreSettings>("/admin/settings", "PUT", next).then((res) => {
+      if (!res.success) console.error("updateSettings:", res.message);
+    });
   }
 
   const getProductBySlug = useCallback(
@@ -366,7 +402,6 @@ export function AdminDataProvider({ children }: { children: ReactNode }) {
         addCoupon,
         updateCoupon,
         deleteCoupon,
-        getCouponByCode,
         markMessageRead,
         deleteMessage,
         addContactMessage,

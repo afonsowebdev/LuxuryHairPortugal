@@ -49,6 +49,7 @@ model Category {
   id       String    @id @default(cuid())
   nome     String
   slug     String    @unique
+  descricao String   @default("")
   imagem   String?
   products Product[]
 }
@@ -184,4 +185,41 @@ model OrderTracking {
   createdAt DateTime @default(now())
 
   @@index([orderId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String
+  assunto   String
+  mensagem  String
+  lida      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Coupon {
+  id          String    @id @default(cuid())
+  codigo      String    @unique
+  tipo        String // "percentagem" | "fixo"
+  valor       Float
+  ativo       Boolean   @default(true)
+  valorMinimo Float?
+  expiraEm    DateTime?
+  limiteUso   Int?
+  usos        Int       @default(0)
+  createdAt   DateTime  @default(now())
+}
+
+// Linha única com as definições da loja — mais simples que modelar cada
+// campo aninhado (envio, pagamentos, marca) como colunas separadas.
+model StoreSettings {
+  id        String   @id @default("default")
+  dados     Json
+  updatedAt DateTime @updatedAt
 }

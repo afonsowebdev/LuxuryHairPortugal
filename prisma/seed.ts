@@ -19,7 +19,8 @@ async function main() {
     create: {
       nome: "Perucas Lisas",
       slug: "perucas-lisas",
-      imagem: "/images/categorias/perucas-lisas.jpg",
+      descricao: "Cabelo 100% humano, brilho natural e caimento fluido para um efeito liso impecável.",
+      imagem: null,
     },
   });
 
@@ -29,20 +30,31 @@ async function main() {
     create: {
       nome: "Perucas Cacheadas",
       slug: "perucas-cacheadas",
-      imagem: "/images/categorias/perucas-cacheadas.jpg",
+      descricao: "Cachos definidos e volumosos, cheios de movimento e personalidade.",
+      imagem: "/assets/produtos/perucas/peruca-preta-cacheada-frontal.jpg",
     },
   });
 
   const boxBraids = await prisma.category.upsert({
     where: { slug: "box-braids" },
     update: {},
-    create: { nome: "Box Braids", slug: "box-braids", imagem: "/images/categorias/box-braids.jpg" },
+    create: {
+      nome: "Box Braids",
+      slug: "box-braids",
+      descricao: "Tranças sintéticas premium, leves e duradouras, prontas a usar.",
+      imagem: "/assets/produtos/box-braids/box-braids-castanhas-frontal.jpg",
+    },
   });
 
   const pestanas = await prisma.category.upsert({
     where: { slug: "pestanas" },
     update: {},
-    create: { nome: "Pestanas", slug: "pestanas", imagem: "/images/categorias/pestanas.jpg" },
+    create: {
+      nome: "Pestanas",
+      slug: "pestanas",
+      descricao: "Pestanas de efeito volume e fio a fio para um olhar sofisticado.",
+      imagem: "/assets/modelos/retrato-pestanas-fundo-bordeaux-01.jpg",
+    },
   });
 
   const produtos = [

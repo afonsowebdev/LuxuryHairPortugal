@@ -11,7 +11,7 @@ export interface CreateOrderInput {
   cidade: string;
   codigoPostal: string;
   pais: string;
-  desconto?: number;
+  codigoCupao?: string;
   envio?: number;
   cartOwner: CartOwner;
 }
@@ -38,8 +38,26 @@ export async function createOrderFromCart(input: CreateOrderInput) {
     }
 
     const subtotal = cartItems.reduce((sum, i) => sum + i.product.preco * i.quantidade, 0);
-    const desconto = input.desconto ?? 0;
     const envio = input.envio ?? 0;
+
+    // O desconto é sempre recalculado aqui a partir do subtotal real do
+    // carrinho — nunca se confia num valor de desconto vindo do cliente.
+    let desconto = 0;
+    let cupao: Awaited<ReturnType<typeof tx.coupon.findUnique>> = null;
+    if (input.codigoCupao) {
+      cupao = await tx.coupon.findUnique({ where: { codigo: input.codigoCupao.trim().toUpperCase() } });
+      if (!cupao) throw new Error("Cupão inválido.");
+      if (!cupao.ativo) throw new Error("Este cupão já não está ativo.");
+      if (cupao.expiraEm && cupao.expiraEm.getTime() < Date.now()) throw new Error("Este cupão expirou.");
+      if (cupao.limiteUso !== null && cupao.usos >= cupao.limiteUso)
+        throw new Error("Este cupão atingiu o limite de utilizações.");
+      if (cupao.valorMinimo && subtotal < cupao.valorMinimo)
+        throw new Error(`Válido a partir de ${cupao.valorMinimo}€ em compras.`);
+
+      const raw = cupao.tipo === "fixo" ? cupao.valor : (subtotal * cupao.valor) / 100;
+      desconto = Math.min(raw, subtotal);
+    }
+
     const total = Math.max(subtotal - desconto, 0) + envio;
 
     const order = await tx.order.create({
@@ -77,6 +95,10 @@ export async function createOrderFromCart(input: CreateOrderInput) {
         where: { id: item.productId },
         data: { stock: { decrement: item.quantidade } },
       });
+    }
+
+    if (cupao) {
+      await tx.coupon.update({ where: { id: cupao.id }, data: { usos: { increment: 1 } } });
     }
 
     await tx.cart.deleteMany({ where: cartWhere(input.cartOwner) });

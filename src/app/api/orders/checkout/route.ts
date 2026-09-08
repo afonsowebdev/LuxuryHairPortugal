@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       cidade: sanitizeString(String(body.cidade)),
       codigoPostal: sanitizeString(String(body.codigoPostal)),
       pais: sanitizeString(String(body.pais)),
-      desconto: body.desconto ? Number(body.desconto) : undefined,
+      codigoCupao: body.codigoCupao ? String(body.codigoCupao) : undefined,
       envio: body.envio ? Number(body.envio) : undefined,
       cartOwner: owner,
     });

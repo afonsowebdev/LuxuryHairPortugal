@@ -15,7 +15,7 @@ import { savePendingOrder } from "@/lib/orderStore";
 import type { ApiOrder } from "@/lib/mappers/order";
 import { getCustomerToken } from "@/context/CustomerAuthContext";
 import { useCustomerOrders } from "@/hooks/useCustomerOrders";
-import type { Coupon, Order } from "@/types";
+import type { Order } from "@/types";
 
 interface ApiEnvelope<T> {
   success: boolean;
@@ -50,25 +50,14 @@ const emptyForm: CustomerForm = {
   notes: "",
 };
 
-function validateCoupon(coupon: Coupon, subtotal: number): string | null {
-  if (!coupon.active) return "Este cupão já não está ativo.";
-  if (coupon.expiresAt && new Date(coupon.expiresAt).getTime() < Date.now())
-    return "Este cupão expirou.";
-  if (typeof coupon.usageLimit === "number" && coupon.usageCount >= coupon.usageLimit)
-    return "Este cupão atingiu o limite de utilizações.";
-  if (coupon.minOrderValue && subtotal < coupon.minOrderValue)
-    return `Válido a partir de ${formatEUR(coupon.minOrderValue)} em compras.`;
-  return null;
+interface AppliedCoupon {
+  code: string;
+  desconto: number;
 }
 
 export default function CheckoutPage() {
   const { lines, subtotal, clearCart } = useCart();
-  const {
-    settings: storeSettings,
-    getCouponByCode,
-    updateCoupon,
-    refreshProducts,
-  } = useAdminData();
+  const { settings: storeSettings, refreshProducts } = useAdminData();
   const { customer, hydrated: authHydrated } = useCustomerAuth();
   const { orders, hydrated: ordersHydrated } = useCustomerOrders();
   const router = useRouter();
@@ -106,8 +95,9 @@ export default function CheckoutPage() {
   const [orderError, setOrderError] = useState<string | null>(null);
 
   const [couponInput, setCouponInput] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   const countryOptions = useMemo(
     () => [
@@ -135,34 +125,31 @@ export default function CheckoutPage() {
     return countryOptions.find((c) => c.value === form.country)?.price ?? 0;
   }, [form.country, subtotal, storeSettings, countryOptions]);
 
-  const discount = useMemo(() => {
-    if (!appliedCoupon) return 0;
-    const raw =
-      appliedCoupon.type === "percentagem"
-        ? (subtotal * appliedCoupon.value) / 100
-        : appliedCoupon.value;
-    return Math.min(raw, subtotal);
-  }, [appliedCoupon, subtotal]);
+  const discount = appliedCoupon?.desconto ?? 0;
 
   const total = subtotal + shipping - discount;
   const shippingLabel = form.country;
 
-  function handleApplyCoupon() {
+  async function handleApplyCoupon() {
     setCouponError(null);
-    if (!couponInput.trim()) return;
-    const coupon = getCouponByCode(couponInput);
-    if (!coupon) {
-      setCouponError("Cupão inválido.");
+    const code = couponInput.trim();
+    if (!code) return;
+
+    setApplyingCoupon(true);
+    const res = await fetch("/api/coupons/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo: code, subtotal }),
+    });
+    const json = (await res.json()) as ApiEnvelope<{ codigo: string; desconto: number }>;
+    setApplyingCoupon(false);
+
+    if (!json.success || !json.data) {
+      setCouponError(json.message || "Cupão inválido.");
       setAppliedCoupon(null);
       return;
     }
-    const error = validateCoupon(coupon, subtotal);
-    if (error) {
-      setCouponError(error);
-      setAppliedCoupon(null);
-      return;
-    }
-    setAppliedCoupon(coupon);
+    setAppliedCoupon({ code: json.data.codigo, desconto: json.data.desconto });
   }
 
   function handleRemoveCoupon() {
@@ -197,7 +184,7 @@ export default function CheckoutPage() {
         cidade: form.city,
         codigoPostal: form.postalCode,
         pais: form.country,
-        desconto: discount > 0 ? discount : undefined,
+        codigoCupao: appliedCoupon?.code,
         envio: shipping,
         metodo: payment === "MB WAY" ? "mbway" : "multibanco",
       }),
@@ -238,10 +225,6 @@ export default function CheckoutPage() {
     };
 
     savePendingOrder(order);
-
-    if (appliedCoupon) {
-      updateCoupon(appliedCoupon.id, { usageCount: appliedCoupon.usageCount + 1 });
-    }
 
     if (payment === "MB WAY") {
       await fetch("/api/payment/webhook", {
@@ -465,10 +448,7 @@ export default function CheckoutPage() {
                   <div>
                     <p className="text-sm font-semibold text-plum-dark">{appliedCoupon.code}</p>
                     <p className="text-xs text-plum-dark/60">
-                      {appliedCoupon.type === "percentagem"
-                        ? `${appliedCoupon.value}% de desconto`
-                        : `${formatEUR(appliedCoupon.value)} de desconto`}{" "}
-                      aplicado
+                      {formatEUR(appliedCoupon.desconto)} de desconto aplicado
                     </p>
                   </div>
                   <button
@@ -490,8 +470,14 @@ export default function CheckoutPage() {
                     />
                     {couponError && <p className="mt-1.5 text-xs text-bordeaux">{couponError}</p>}
                   </div>
-                  <Button type="button" variant="secondary" size="md" onClick={handleApplyCoupon}>
-                    Aplicar
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="md"
+                    onClick={handleApplyCoupon}
+                    disabled={applyingCoupon}
+                  >
+                    {applyingCoupon ? "A validar..." : "Aplicar"}
                   </Button>
                 </div>
               )}
