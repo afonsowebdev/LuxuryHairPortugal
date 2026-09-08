@@ -119,6 +119,71 @@ textarea:focus-visible,
   outline: none;
   transition: border-color 0.2s ease;
 }
+
+/* Slider de preço (filtro da loja) — track com preenchimento a dourado e
+   cursor discreto, em vez do estilo nativo do browser. */
+.range-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-gold) 0%,
+    var(--color-gold) var(--range-progress, 0%),
+    rgba(53, 21, 43, 0.14) var(--range-progress, 0%),
+    rgba(53, 21, 43, 0.14) 100%
+  );
+  outline: none;
+  cursor: pointer;
+  margin: 6px 0;
+}
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-cream);
+  border: 3px solid var(--color-gold-dark);
+  box-shadow: 0 1px 3px rgba(53, 21, 43, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.range-slider::-webkit-slider-thumb:hover,
+.range-slider::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+}
+.range-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+.range-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-cream);
+  border: 3px solid var(--color-gold-dark);
+  box-shadow: 0 1px 3px rgba(53, 21, 43, 0.35);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.range-slider::-moz-range-thumb:hover,
+.range-slider::-moz-range-thumb:active {
+  transform: scale(1.15);
+}
+.range-slider:focus-visible {
+  outline: none;
+}
+.range-slider:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--color-gold-dark);
+  outline-offset: 2px;
+}
+.range-slider:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--color-gold-dark);
+  outline-offset: 2px;
+}
 .input:focus {
   border-color: var(--color-gold);
 }

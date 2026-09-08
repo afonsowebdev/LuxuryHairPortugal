@@ -228,7 +228,12 @@ export function ShopFilters({
             step={5}
             value={state.maxPrice}
             onChange={(e) => onChange({ ...state, maxPrice: Number(e.target.value) })}
-            className="accent-gold"
+            className="range-slider"
+            style={
+              {
+                "--range-progress": `${priceCeiling > 0 ? (state.maxPrice / priceCeiling) * 100 : 0}%`,
+              } as React.CSSProperties
+            }
             aria-label="Preço máximo"
           />
           <div className="flex items-center justify-between text-[11px] text-plum-dark/50">
