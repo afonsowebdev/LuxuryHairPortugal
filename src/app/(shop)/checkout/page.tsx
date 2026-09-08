@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { CheckIcon, LockIcon, PhoneIcon } from "@/components/ui/icons";
 import { Select } from "@/components/ui/Select";
 import { formatEUR } from "@/lib/format";
-import { savePendingOrder } from "@/lib/orderStore";
+import { savePendingOrder, getPendingOrder } from "@/lib/orderStore";
 import type { ApiOrder } from "@/lib/mappers/order";
 import { getCustomerToken } from "@/context/CustomerAuthContext";
 import { useCustomerOrders } from "@/hooks/useCustomerOrders";
@@ -25,7 +25,7 @@ interface ApiEnvelope<T> {
 
 interface CheckoutResponse {
   order: ApiOrder;
-  payment: { entidade: string; referencia: string; valor: number; expiraEm: string };
+  payment: { entidade: string; referencia: string; valor: number; expiraEm: string; simulado: boolean };
 }
 
 interface CustomerForm {
@@ -168,7 +168,7 @@ export default function CheckoutPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function submitOrder(): Promise<{ orderId: string } | { error: string }> {
+  async function submitOrder(): Promise<{ orderId: string; simulado: boolean } | { error: string }> {
     const token = getCustomerToken();
     const res = await fetch("/api/orders/checkout", {
       method: "POST",
@@ -187,6 +187,7 @@ export default function CheckoutPage() {
         codigoCupao: appliedCoupon?.code,
         envio: shipping,
         metodo: payment === "MB WAY" ? "mbway" : "multibanco",
+        mbwayTelemovel: payment === "MB WAY" ? mbwayPhone : undefined,
       }),
     });
     const json = (await res.json()) as ApiEnvelope<CheckoutResponse>;
@@ -225,17 +226,18 @@ export default function CheckoutPage() {
     };
 
     savePendingOrder(order);
+    return { orderId: order.id, simulado: apiPayment.simulado };
+  }
 
-    if (payment === "MB WAY") {
-      await fetch("/api/payment/webhook", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id }),
-      });
-      savePendingOrder({ ...order, status: "Pago" });
+  async function pollMbwayPayment(orderId: string): Promise<boolean> {
+    const MAX_ATTEMPTS = 90; // ~4.5 min a cada 3s — a app MB WAY expira o pedido ao fim de ~4 min
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      await new Promise((resolve) => window.setTimeout(resolve, 3000));
+      const res = await fetch(`/api/payment/status?orderId=${orderId}`);
+      const json = (await res.json()) as ApiEnvelope<{ estado: string }>;
+      if (json.success && json.data?.estado === "PAGO") return true;
     }
-
-    return { orderId: order.id };
+    return false;
   }
 
   function handlePlaceOrder() {
@@ -248,21 +250,41 @@ export default function CheckoutPage() {
       setMbwayError(null);
       setSubmitting(true);
       setMbwayPending(true);
-      // PROTOTYPE ONLY — a real integration calls a payment provider (e.g.
-      // SIBS/Ifthenpay) that pushes the request to the MB WAY app and
-      // notifies the backend via webhook once the customer approves it.
-      window.setTimeout(async () => {
-        const result = await submitOrder();
+
+      submitOrder().then(async (result) => {
         if ("error" in result) {
           setMbwayPending(false);
           setSubmitting(false);
           setOrderError(result.error);
           return;
         }
+
+        let paid: boolean;
+        if (result.simulado) {
+          // Sem credenciais MB WAY reais configuradas — simula a aprovação
+          // na app ao fim de alguns segundos, como até aqui.
+          await new Promise((resolve) => window.setTimeout(resolve, 2600));
+          await fetch("/api/payment/webhook", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ orderId: result.orderId }),
+          });
+          paid = true;
+        } else {
+          // Pedido real enviado à app MB WAY — espera pela aprovação do
+          // cliente (via callback da ifthenpay a confirmar o pagamento).
+          paid = await pollMbwayPayment(result.orderId);
+        }
+
+        if (paid) {
+          const pending = getPendingOrder(result.orderId);
+          if (pending) savePendingOrder({ ...pending, status: "Pago" });
+        }
+
         clearCart();
         refreshProducts();
         router.push(`/encomenda-recebida/${result.orderId}`);
-      }, 2600);
+      });
       return;
     }
 

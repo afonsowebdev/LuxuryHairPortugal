@@ -3,7 +3,7 @@ import { ok, fail } from "@/backend/lib/response";
 import { resolveCartOwner, applyCartSessionCookie } from "@/backend/lib/cartSession";
 import { validateCheckout, sanitizeString } from "@/backend/lib/validators";
 import { createOrderFromCart } from "@/backend/models/order.model";
-import { generatePaymentForOrder } from "@/backend/models/payment.model";
+import { generatePaymentForOrder, requestMbwayPaymentForOrder } from "@/backend/models/payment.model";
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,7 +27,14 @@ export async function POST(req: NextRequest) {
       cartOwner: owner,
     });
 
-    const payment = await generatePaymentForOrder(order.id, body.metodo === "mbway" ? "mbway" : "multibanco");
+    const { payment, simulado } =
+      body.metodo === "mbway"
+        ? await requestMbwayPaymentForOrder(
+            order.id,
+            sanitizeString(String(body.mbwayTelemovel ?? body.telefone)),
+            String(body.email).trim()
+          )
+        : await generatePaymentForOrder(order.id);
 
     return applyCartSessionCookie(
       ok(
@@ -38,6 +45,7 @@ export async function POST(req: NextRequest) {
             referencia: payment.referencia,
             valor: payment.valor,
             expiraEm: payment.expiraEm,
+            simulado,
           },
         },
         "Encomenda criada.",

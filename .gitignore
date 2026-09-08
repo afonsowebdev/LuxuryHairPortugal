@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — .env.example fica excluído da exclusão: só tem placeholders,
+# e é o ficheiro que o README pede para copiar para .env
 .env*
+!.env.example
 
 # vercel
 .vercel

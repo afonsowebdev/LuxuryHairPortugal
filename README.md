@@ -82,7 +82,7 @@ Conta real, criada pelo seed (ver ["Configurar a base de dados"](#configurar-a-b
 
 O backend é real (Prisma + PostgreSQL) e a loja está ligada a ele de ponta a ponta, mas ainda há peças propositadamente simuladas ou simplificadas:
 
-1. **Pagamentos Multibanco/MB WAY** — `src/backend/lib/multibanco.ts` gera Entidade/Referência de forma simulada (hash determinístico), e a confirmação de pagamento (`/api/payment/webhook`) não tem verificação de assinatura — qualquer pedido a essa rota marca a encomenda como paga. Substituir por integração real com um fornecedor português (IfThenPay, Easypay ou SIBS/Multibanco direto), validando a assinatura do webhook antes de confiar nele.
+1. **Pagamentos Multibanco/MB WAY** — já existe uma integração real com a **ifthenpay** (`src/backend/lib/ifthenpay.ts`), usada automaticamente assim que as variáveis `IFTHENPAY_*` estiverem definidas (ver ["Pagamentos reais com a ifthenpay"](#pagamentos-reais-com-a-ifthenpay)). Sem elas, mantém-se o comportamento simulado de sempre (Multibanco com referência falsa, MB WAY a auto-confirmar-se) — nunca testado contra uma conta ifthenpay real, por isso vale a pena confirmar o fluxo completo em modo sandbox antes de aceitar pagamentos verdadeiros.
 2. **Emails/SMS de confirmação** — a encomenda é criada e a referência gerada, mas não há envio de email/SMS ao cliente. Adicionar um fornecedor (Resend, SendGrid, etc.) chamado a seguir ao checkout e à confirmação de pagamento.
 3. **JWT_SECRET e segredos** — gerados localmente para desenvolvimento (`.env`, nunca commitado). Gerar segredos novos e fortes para produção, nunca reutilizar os de desenvolvimento.
 4. **Estrutura `pages/api/`** — o pedido original especificava endpoints em Pages Router; optou-se por App Router route handlers (`src/app/api/**/route.ts`) para não obrigar a reescrever as páginas existentes. Funcionalmente equivalentes, mas é uma divergência consciente do pedido original a ter em conta.
@@ -174,7 +174,8 @@ Todas as respostas seguem `{ success, data, message }`. Rotas marcadas 🔒 exig
 | GET | `/api/orders/:id` | Detalhe da encomenda (verifica dono, se associada a conta) |
 | POST | `/api/payment/generate` | (Re)gerar referência Multibanco de uma encomenda |
 | GET | `/api/payment/status?orderId=` | Estado do pagamento |
-| POST | `/api/payment/webhook` | Simula confirmação de pagamento (marca Pago) |
+| GET | `/api/payment/webhook?oid=&val=&tid=&ref=&apk=&pm=` | Callback real da ifthenpay (valida a anti-phishing key antes de marcar como pago) |
+| POST | `/api/payment/webhook` | Simula confirmação de pagamento — só funciona sem credenciais ifthenpay configuradas |
 | POST | `/api/coupons/validate` | Validar um código de cupão contra o subtotal, sem o aplicar |
 | POST | `/api/contact` | Submeter o formulário de contacto |
 | POST | `/api/newsletter` | Subscrever a newsletter |
@@ -187,6 +188,17 @@ Todas as respostas seguem `{ success, data, message }`. Rotas marcadas 🔒 exig
 | GET/PUT/DELETE 🔒👑 | `/api/admin/messages` | Listar/marcar como lida/eliminar mensagens de contacto |
 | GET 🔒👑 | `/api/admin/newsletter` | Listar subscritores |
 | PUT 🔒👑 | `/api/admin/settings` | Atualizar definições da loja |
+
+### Pagamentos reais com a ifthenpay
+
+Sem as variáveis `IFTHENPAY_*`, os pagamentos continuam simulados (Multibanco com referência falsa gerada localmente, MB WAY a auto-confirmar-se ao fim de ~3s) — a loja funciona normalmente em desenvolvimento sem precisar de conta na ifthenpay. Para ligar pagamentos reais:
+
+1. Cria conta em [ifthenpay.com](https://ifthenpay.com) e, no backoffice, ativa os serviços **Multibanco** e/ou **MB WAY**.
+2. **Multibanco**: pede a atribuição de uma Entidade + Sub-Entidade dedicada (o serviço "self-service", sem chamada à API) — copia para `IFTHENPAY_MB_ENTITY` e `IFTHENPAY_MB_SUBENTITY`. A referência é calculada localmente (`src/backend/lib/ifthenpay.ts`, algoritmo Módulo 97 confirmado a partir do [SDK PHP oficial](https://github.com/ifthenpay/ifthenpay-sdk-php)) — não é preciso pedir nada à API para gerar uma referência válida.
+3. **MB WAY**: copia a chave do serviço para `IFTHENPAY_MBWAY_KEY`. Ao finalizar a compra, a ifthenpay envia de imediato uma notificação push para o número de telemóvel indicado no checkout.
+4. No backoffice, define uma **anti-phishing key** e copia-a para `IFTHENPAY_ANTI_PHISHING_KEY` — é o segredo partilhado que permite validar que um callback recebido em `/api/payment/webhook` (GET) é mesmo da ifthenpay, e não um pedido forjado a marcar uma encomenda como paga.
+5. Configura o callback no backoffice da ifthenpay para apontar a `https://<o-teu-domínio>/api/payment/webhook`, tanto para o serviço Multibanco como MB WAY.
+6. **Antes de aceitar pagamentos reais**: testa o fluxo completo em modo sandbox da ifthenpay (encomenda → notificação MB WAY ou referência Multibanco → callback → encomenda marcada como paga) — esta integração foi escrita a partir da documentação pública e do SDK oficial, mas nunca foi testada contra uma conta ifthenpay real.
 
 ### Deploy no Vercel
 
